@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataVision Analytics - Marketing by Bao</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --color-deep-navy: #0a1628;
+            --color-navy: #1a2942;
+            --color-gold: #d4af37;
+            --color-light-gold: #f4e4b8;
+            --color-white: #ffffff;
+            --color-cream: #fafaf7;
+            --color-slate: #64748b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Manrope', sans-serif;
+            background: var(--color-deep-navy);
+            color: var(--color-cream);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(26, 41, 66, 0.5) 0%, transparent 50%);
+            animation: bgShift 15s ease-in-out infinite;
+        }
+
+        @keyframes bgShift {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-50px, -50px); }
+        }
+
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1.5rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: rgba(10, 22, 40, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--color-gold);
+            letter-spacing: -1px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: var(--color-cream);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.85rem;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--color-gold);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--color-gold);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .page-section {
+            min-height: 100vh;
+            padding: 8rem 5% 4rem;
+            display: none;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        .page-content {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .page-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: var(--color-gold);
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .page-subtitle {
+            font-size: 1.2rem;
+            color: var(--color-slate);
+            margin-bottom: 3rem;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        .marketing-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--color-gold), #b8941f);
+            color: var(--color-deep-navy);
+            padding: 0.4rem 1.2rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8rem 5% 4rem;
+        }
+
+        .hero-content {
+            max-width: 1400px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5rem;
+            align-items: center;
+        }
+
+        .hero-text h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 4.5rem;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            color: var(--color-white);
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .hero-text h1 .highlight {
+            color: var(--color-gold);
+            display: block;
+        }
+
+        .hero-text p {
+            font-size: 1.15rem;
+            color: var(--color-slate);
+            margin-bottom: 2rem;
+            line-height: 1.8;
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1.2rem;
+            animation: fadeInUp 1s ease-out 0.4s both;
+        }
+
+        .btn {
+            padding: 0.9rem 2rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--color-gold), #b8941f);
+            color: var(--color-deep-navy);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(212, 175, 55, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--color-cream);
+            border: 2px solid var(--color-gold);
+        }
+
+        .btn-secondary:hover {
+            background: var(--color-gold);
+            color: var(--color-deep-navy);
+            transform: translateY(-2px);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chart-container {
+            position: relative;
+            animation: fadeInUp 1s ease-out 0.6s both;
+        }
+
+        .chart-wrapper {
+            background: linear-gradient(135deg, rgba(26, 41, 66, 0.6), rgba(10, 22, 40, 0.4));
+            backdrop-filter: blur(20px);
+            padding: 2.5rem;
+            border-radius: 25px;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-wrapper::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.1) 0%, transparent 70%);
+            animation: chartGlow 8s ease-in-out infinite;
+        }
+
+        @keyframes chartGlow {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-20px, -20px); }
+        }
+
+        .chart-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            color: var(--color-gold);
+            margin-bottom: 1.5rem;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        canvas {
+            position: relative;
+            z-index: 1;
+            max-height: 350px;
+        }
+
+        .stats {
+            padding: 5rem 5%;
+            background: linear-gradient(180deg, transparent, rgba(26, 41, 66, 0.3));
+        }
+
+        .stats-grid {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2.5rem;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 2rem;
+            border-radius: 20px;
+            background: rgba(26, 41, 66, 0.3);
+            border: 1px solid rgba(212, 175, 55, 0.1);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(212, 175, 55, 0.3);
+        }
+
+        .stat-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--color-gold);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--color-slate);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 600;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .feature-card {
+            padding: 2.5rem;
+            background: linear-gradient(135deg, rgba(26, 41, 66, 0.5), rgba(10, 22, 40, 0.3));
+            border-radius: 20px;
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(212, 175, 55, 0.4);
+            box-shadow: 0 20px 50px rgba(212, 175, 55, 0.2);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1.2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-card h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--color-gold);
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-card p {
+            color: var(--color-slate);
+            line-height: 1.7;
+            position: relative;
+            z-index: 1;
+            font-size: 0.95rem;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2.5rem;
+            margin-top: 3rem;
+        }
+
+        .content-card {
+            background: rgba(26, 41, 66, 0.4);
+            padding: 2.2rem;
+            border-radius: 20px;
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .content-card h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            color: var(--color-gold);
+            margin-bottom: 1rem;
+        }
+
+        .content-card p {
+            color: var(--color-slate);
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+
+        .content-card ul {
+            list-style: none;
+            margin-top: 1.2rem;
+        }
+
+        .content-card li {
+            color: var(--color-slate);
+            padding: 0.4rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            font-size: 0.95rem;
+        }
+
+        .content-card li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--color-gold);
+        }
+
+        footer {
+            padding: 3rem 5%;
+            background: var(--color-navy);
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+            text-align: center;
+        }
+
+        footer p {
+            color: var(--color-slate);
+            font-size: 0.9rem;
+        }
+
+        .footer-badge {
+            display: inline-block;
+            color: var(--color-gold);
+            font-weight: 700;
+            margin-top: 0.5rem;
+        }
+
+        @media (max-width: 1024px) {
+            .hero-content {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+            .hero-text h1 {
+                font-size: 3rem;
+            }
+            .stats-grid, .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .hero-text h1 {
+                font-size: 2.2rem;
+            }
+            .page-title {
+                font-size: 2.2rem;
+            }
+            .stats-grid, .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+
+    <nav>
+        <div class="logo">DataVision</div>
+        <ul class="nav-links">
+            <li><a href="#home" class="nav-link">Home</a></li>
+            <li><a href="#about" class="nav-link">About</a></li>
+            <li><a href="#services" class="nav-link">Services</a></li>
+            <li><a href="#solutions" class="nav-link">Solutions</a></li>
+            <li><a href="#pricing" class="nav-link">Pricing</a></li>
+            <li><a href="#testimonials" class="nav-link">Testimonials</a></li>
+            <li><a href="#team" class="nav-link">Team</a></li>
+            <li><a href="#blog" class="nav-link">Blog</a></li>
+            <li><a href="#careers" class="nav-link">Careers</a></li>
+            <li><a href="#contact" class="nav-link">Contact</a></li>
+        </ul>
+    </nav>
+
+    <!-- Page 1: Home -->
+    <section class="hero page-section active" id="home">
+        <div class="hero-content">
+            <div class="hero-text">
+                <div class="marketing-badge">Marketing by Bao</div>
+                <h1>
+                    Transform Data Into
+                    <span class="highlight">Strategic Insights</span>
+                </h1>
+                <p>Unlock the power of advanced analytics and visualization. Make data-driven decisions that propel your business forward with confidence and precision.</p>
+                <div class="cta-buttons">
+                    <button class="btn btn-primary">Start Free Trial</button>
+                    <button class="btn btn-secondary">Watch Demo</button>
+                </div>
+            </div>
+            <div class="chart-container">
+                <div class="chart-wrapper">
+                    <h3 class="chart-title">Market Distribution</h3>
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Page 2: About -->
+    <section class="page-section" id="about">
+        <div class="page-content">
+            <div class="marketing-badge">Marketing by Bao</div>
+            <h2 class="page-title">About DataVision</h2>
+            <p class="page-subtitle">We're revolutionizing how businesses understand and leverage their data through innovative analytics solutions.</p>
+            
+            <div class="content-grid">
+                <div class="content-card">
+                    <h3>Our Mission</h3>
+                    <p>To empower every organization with intelligent data analytics that drives meaningful business outcomes and sustainable growth.</p>
+                </div>
+                <div class="content-card">
+                    <h3>Our Vision</h3>
+                    <p>A world where data-driven decision making is accessible to all, enabling businesses to thrive in an increasingly complex digital landscape.</p>
+                </div>
+                <div class="content-card">
+                    <h3>Our Values</h3>
+                    <ul>
+                        <li>Innovation First</li>
+                        <li>Customer Success</li>
+                        <li>Data Privacy & Security</li>
+                        <li>Continuous Improvement</li>
+                        <li>Transparency & Trust</li>
+                    </ul>
+                </div>
+                <div class="content-card">
+                    <h3>Company History</h3>
+                    <p>Founded in 2020, DataVision has rapidly grown to serve over 150 enterprise clients globally, processing billions of data points daily with cutting-edge technology.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Page 3: Services -->
+    <section class="page-section" id="services">
+        <div class="page-content">
+            <div class="marketing-badge">Marketing by Bao</div>
+            <h2 class="page-title">Our Services</h2>
+            <p class="page-subtitle">Comprehensive analytics solutions tailored to your business needs.</p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Data Analytics</h3>
+                    <p>Transform raw data into actionable insights with our advanced analytics platform powered by machine learning algorithms.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Business Intelligence</h3>
+                    <p>Make informed decisions with real-time dashboards and comprehensive reporting tools designed for modern executives.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Predictive Modeling</h3>
+                    <p>Forecast trends and anticipate market changes with our sophisticated predictive analytics and AI models.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💼</div>
+                    <h3>Consulting Services</h3>
+                    <p>Expert guidance from our team of data scientists to optimize your analytics strategy and implementation.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔧</div>
+                    <h3>Custom Integration</h3>
+                    <p>Seamlessly connect with your existing systems through our flexible API and custom integration solutions.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3>Mobile Analytics</h3>
+                    <p>Access your data anywhere with our mobile-optimized platform and dedicated iOS/Android applications.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Page 4: Solutions -->
+    <section class="page-section" id="solutions">
+        <div class="page-content">
+            <div class="marketing-badge">Marketing by Bao</div>
+            <h2 class="page-title">Industry Solutions</h2>
+            <p class="page-subtitle">Specialized solutions for your industry's unique challenges.</p>
+            
+            <div class="content-grid">
+                <div class="content-card">
+                    <h3>E-Commerce</h3>
+                    <p>Optimize conversion rates, track customer behavior, and maximize revenue with our e-commerce analytics suite.</p>
+                    <ul>
+                        <li>Customer Journey Mapping</li>
+                        <li>Cart Abandonment Analysis</li>
+                        <li>Product Performance Tracking</li>
+                        <li>Revenue Optimization</li>
+                    </ul>
+                </div>
+                <div class="content-card">
+                    <h3>Healthcare</h3>
+                    <p>Improve patient outcomes and operational efficiency with HIPAA-compliant healthcare analytics solutions.</p>
+                    <ul>
+                        <li>Patient Flow Optimization</li>
+                        <li>Resource Allocation</li>
+                        <li>Clinical Decision Support</li>
+                        <li>Cost Reduction Strategies</li>
+                    </ul>
+                </div>
+                <div class="content-card">
+                    <h3>Finance</h3>
+                    <p>Manage risk, detect fraud, and optimize portfolios with our enterprise-grade financial analytics platform.</p>
+                    <ul>
+                        <li>Risk Assessment & Management</li>
+                        <li>Fraud Detection AI</li>
+                        <li>Portfolio Optimization</li>
+                        <li>Regulatory Compliance</li>
+                    </ul>
+                </div>
+                <div class="content-card">
+                    <h3>Manufacturing</h3>
+                    <p>Enhance production efficiency and reduce costs with IoT-enabled manufacturing analytics solutions.</p>
+                    <ul>
+                        <li>Predictive Maintenance</li>
+                        <li>Quality Control</li>
+                        <li>Supply Chain Optimization</li>
+                        <li>Operational Excellence</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Page 5: Pricing -->
+    <section class="page-section" id="pricing">
+        <div class="page-content">
+            <div class="marketing-badge">Marketing by Bao</div>
+            <h2 class="page-title">Pricing Plans</h2>
+            <p class="page-subtitle">Flexible pricing to match your business size and needs.</p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Starter</h3>
+                    <div class="stat-number" style="font-size: 2.2rem;">$99</div>
+                    <p style="margin-bottom: 1.5rem; color: var(--color-slate);">per month</p>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 0.4rem 0; position: relative; padding-left: 1.5rem; color: var(--color-slate); font-size: 0.9rem;">
+                            <span style="position: absolute; left: 0; color: var(--color-gold);">✓</span> Up to 10,000 data points
+                        </li>
+                        <li style="padding: 0.4rem 0; position: relative; padding-left: 1.5rem; color: var(--color-slate); font-size: 0.9rem;">
+                            <span style="position: absolute; left: 0; color: var(--color-gold);">✓</span> Basic analytics
+                        </li>
+                        <li style="padding: 0.4rem 0; position: relative; padding-left: 1.5rem; color: var(--color-slate); font-size: 0.9rem;">
+                            <span style="position: absolute; left: 0; color: var(--color-gold);">✓</span> Email support
+                        </li>
+                        <li style="padding: 0.4rem 0; position: relative; padding-left: 1.5rem; color: var(--color-slate); font-size: 0.9rem;">
+                            <span style="position: absolute; left: 0; color: var(--color-gold);">✓</span> 1 user account
+                        </li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🚀</div>
+                    <h3>Professional</h3>
+                    <div class="stat-number" style="font-size: 2.2rem;">$299</div>
+                    <p style="margin-bottom: 1.5rem; color: var(--color-slate);">per month</p>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 0.4rem 0; position: relative; padding-left: 1.5rem; color: var(--color-slate); font-size: 0.9rem;">
+                            <span style="position: absolute; left: 0; color: var(--color-gold);">✓</span> Up to 100,000 data points
+                        </li>
+                        <li style="padding: 0.4rem 0; position: relative; padding-left: 1.5rem; color: var(--color-slate); font-size: 0.9rem;">
+                            <span style="position: absolute; left: 0; color: var(--color-gold);">✓</span> Advanced analytics
+                        </li>
+                        <li style="padding: 0.4rem 0; position: relative; padding-left: 1.5rem; color: var(--color-slate); font-size: 0.9rem;">
+                            <span style="position: absolute; left: 0; color: var(--color-gold);">✓</span> Priority support
+                        </li>
+                        <li style="padding: 0.4rem 0; position: relative; padding-left: 1.5rem; color: var(--color-slate); font-size: 0.9rem;">
+                            <span style="position: absolute; left: 0; color: var(--color-gold);">✓</span> 5 user accounts
+                        </li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⭐</div>
+                    <h3>Enterprise</h3>
+                    <div class="stat-number" style="font-size: 2.2rem;">Custom</div>
+                    <p style="margin-bottom: 1.5rem; color: var(--color-slate);">contact us</p>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 0.4rem 0; position: relative; padding-left: 1.5rem; color: var(--color-slate); font-size: 0.9rem;">
+                            <span style="position: absolute; left: 0; color: var(--color-gold);">✓</span> Unlimited data points
+                        </li>
+                        <li style="padding: 0.4rem 0; position: relative; padding-left: 1.5rem; color: var(--color-slate); font-size: 0.9rem;">
+                            <span style="position: absolute; left: 0; color: var(--color-gold);">✓</span> Custom features
+                        </li>
+                        <li style="padding: 0.4rem 0; position: relative; padding-left: 1.5rem; color: var(--color-slate); font-size: 0.9rem;">
+                            <span style="position: absolute; left: 0; color: var(--color-gold);">✓</span> Dedicated support
+                        </li>
+                        <li style="padding: 0.4rem 0; position: relative; padding-left: 1.5rem; color: var(--color-slate); font-size: 0.9rem;">
+                            <span style="position: absolute; left: 0; color: var(--color-gold);">✓</span> Unlimited users
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Page 6: Testimonials -->
+    <section class="page-section" id="testimonials">
+        <div class="page-content">
+            <div class="marketing-badge">Marketing by Bao</div>
+            <h2 class="page-title">Client Testimonials</h2>
+            <p class="page-subtitle">Hear what our satisfied clients have to say about DataVision.</p>
+            
+            <div class="content-grid">
+                <div class="content-card">
+                    <h3>Sarah Johnson</h3>
+                    <p style="color: var(--color-gold); margin-bottom: 1rem;">CEO, TechCorp International</p>
+                    <p>"DataVision transformed how we make decisions. The insights are incredible and the platform is so intuitive that our entire team adopted it within weeks."</p>
+                </div>
+                <div class="content-card">
+                    <h3>Michael Chen</h3>
+                    <p style="color: var(--color-gold); margin-bottom: 1rem;">CTO, FinanceHub Solutions</p>
+                    <p>"The best analytics platform we've ever used. ROI was evident within the first month of implementation. Highly recommended for any serious business."</p>
+                </div>
+                <div class="content-card">
+                    <h3>Emily Rodriguez</h3>
+                    <p style="color: var(--color-gold); margin-bottom: 1rem;">Director of Operations, HealthPlus</p>
+                    <p>"DataVision's healthcare solutions helped us improve patient care while reducing operational costs by 30%. The predictive analytics are game-changing."</p>
+                </div>
+                <div class="content-card">
+                    <h3>David Kim</h3>
+                    <p style="color: var(--color-gold); margin-bottom: 1rem;">VP Operations, ManufacturePro</p>
+                    <p>"Predictive maintenance features have saved us millions in downtime. The team at DataVision provides exceptional support and continues to innovate."</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Page 7: Team -->
+    <section class="page-section" id="team">
+        <div class="page-content">
+            <div class="marketing-badge">Marketing by Bao</div>
+            <h2 class="page-title">Our Team</h2>
+            <p class="page-subtitle">Meet the experts behind DataVision's success.</p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">👨‍💼</div>
+                    <h3>John Smith</h3>
+                    <p style="color: var(--color-gold); margin-bottom: 0.8rem;">CEO & Founder</p>
+                    <p>20+ years in data analytics and business intelligence. Former VP at Fortune 500 tech companies with a passion for democratizing data.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👩‍💻</div>
+                    <h3>Dr. Lisa Wang</h3>
+                    <p style="color: var(--color-gold); margin-bottom: 0.8rem;">Chief Data Scientist</p>
+                    <p>PhD in Machine Learning from MIT. Published researcher with deep expertise in AI, neural networks, and predictive analytics.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👨‍🔧</div>
+                    <h3>Mark Anderson</h3>
+                    <p style="color: var(--color-gold); margin-bottom: 0.8rem;">Chief Technology Officer</p>
+                    <p>Expert in cloud architecture and scalable systems. Previously led engineering teams at top tech companies building platforms at massive scale.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👩‍💼</div>
+                    <h3>Jennifer Lee</h3>
+                    <p style="color: var(--color-gold); margin-bottom: 0.8rem;">VP of Sales</p>
+                    <p>15 years in enterprise software sales with proven track record. Passionate about helping clients achieve measurable business outcomes.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👨‍🎨</div>
+                    <h3>Alex Martinez</h3>
+                    <p style="color: var(--color-gold); margin-bottom: 0.8rem;">Head of Design</p>
+                    <p>Award-winning UX designer focused on creating intuitive and beautiful user experiences that make complex data accessible to everyone.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👩‍🏫</div>
+                    <h3>Rachel Brown</h3>
+                    <p style="color: var(--color-gold); margin-bottom: 0.8rem;">Customer Success Lead</p>
+                    <p>Dedicated to ensuring every client maximizes value from our platform. Expert in onboarding and training with 98% satisfaction rating.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Page 8: Blog -->
+    <section class="page-section" id="blog">
+        <div class="page-content">
+            <div class="marketing-badge">Marketing by Bao</div>
+            <h2 class="page-title">Latest from Our Blog</h2>
+            <p class="page-subtitle">Stay updated with the latest trends in data analytics and business intelligence.</p>
+            
+            <div class="content-grid">
+                <div class="content-card">
+                    <h3>The Future of AI in Analytics</h3>
+                    <p style="color: var(--color-gold); margin-bottom: 1rem;">January 15, 2026 • 5 min read</p>
+                    <p>Exploring how artificial intelligence is reshaping the analytics landscape and what it means for businesses preparing for the next decade of data-driven growth.</p>
+                </div>
+                <div class="content-card">
+                    <h3>5 Ways to Improve Data Quality</h3>
+                    <p style="color: var(--color-gold); margin-bottom: 1rem;">January 10, 2026 • 7 min read</p>
+                    <p>Practical tips for ensuring your data is accurate, complete, and ready for analysis. Learn best practices from industry experts and avoid common pitfalls.</p>
+                </div>
+                <div class="content-card">
+                    <h3>Case Study: E-Commerce Success Story</h3>
+                    <p style="color: var(--color-gold); margin-bottom: 1rem;">January 5, 2026 • 10 min read</p>
+                    <p>How one major online retailer increased conversions by 40% and revenue by $5M annually using DataVision's advanced analytics platform and predictive models.</p>
+                </div>
+                <div class="content-card">
+                    <h3>Data Privacy & Security in 2026</h3>
+                    <p style="color: var(--color-gold); margin-bottom: 1rem;">December 28, 2025 • 6 min read</p>
+                    <p>Understanding new regulations and best practices for protecting customer data while maintaining analytics capabilities in an increasingly regulated environment.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Page 9: Careers -->
+    <section class="page-section" id="careers">
+        <div class="page-content">
+            <div class="marketing-badge">Marketing by Bao</div>
+            <h2 class="page-title">Join Our Team</h2>
+            <p class="page-subtitle">Be part of a company that's transforming how businesses use data to drive success.</p>
+            
+            <div class="content-grid">
+                <div class="content-card">
+                    <h3>Senior Data Engineer</h3>
+                    <p style="color: var(--color-gold); margin-bottom: 1rem;">Full-time • Remote • $120k-180k</p>
+                    <p>Build scalable data pipelines and infrastructure for our rapidly growing analytics platform serving enterprise clients worldwide.</p>
+                    <ul>
+                        <li>5+ years experience in data engineering</li>
+                        <li>Expert in Python, SQL, Apache Spark</li>
+                        <li>Cloud platforms (AWS/GCP) experience</li>
+                        <li>Strong CS fundamentals</li>
+                    </ul>
+                </div>
+                <div class="content-card">
+                    <h3>Product Designer (UX/UI)</h3>
+                    <p style="color: var(--color-gold); margin-bottom: 1rem;">Full-time • Hybrid • $100k-150k</p>
+                    <p>Create beautiful, intuitive interfaces for complex data visualizations that delight users and solve real business problems.</p>
+                    <ul>
+                        <li>3+ years in UX/UI design</li>
+                        <li>Proficient in Figma, prototyping tools</li>
+                        <li>Strong portfolio required</li>
+                        <li>Data visualization experience a plus</li>
+                    </ul>
+                </div>
+                <div class="content-card">
+                    <h3>Enterprise Sales Executive</h3>
+                    <p style="color: var(--color-gold); margin-bottom: 1rem;">Full-time • On-site • $80k+ commission</p>
+                    <p>Help Fortune 500 companies discover how DataVision can transform their business through data-driven insights and analytics.</p>
+                    <ul>
+                        <li>B2B SaaS sales experience required</li>
+                        <li>Strong communication & presentation skills</li>
+                        <li>Proven track record of exceeding quotas</li>
+                        <li>Enterprise deal experience preferred</li>
+                    </ul>
+                </div>
+                <div class="content-card">
+                    <h3>Machine Learning Engineer</h3>
+                    <p style="color: var(--color-gold); margin-bottom: 1rem;">Full-time • Remote • $130k-200k</p>
+                    <p>Develop and deploy cutting-edge ML models that power our predictive analytics and AI-driven insights for clients.</p>
+                    <ul>
+                        <li>Strong ML/AI expertise required</li>
+                        <li>TensorFlow, PyTorch, scikit-learn</li>
+                        <li>PhD or equivalent experience preferred</li>
+                        <li>Published research is a plus</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Page 10: Contact -->
+    <section class="page-section" id="contact">
+        <div class="page-content">
+            <div class="marketing-badge">Marketing by Bao</div>
+            <h2 class="page-title">Get In Touch</h2>
+            <p class="page-subtitle">Ready to transform your business with data? Let's start the conversation.</p>
+            
+            <div class="content-grid">
+                <div class="content-card">
+                    <h3>📧 Email Us</h3>
+                    <p style="font-size: 1.1rem; color: var(--color-gold); margin-top: 1rem;">contact@datavision.com</p>
+                    <p style="margin-top: 1rem; font-size: 0.9rem;">For general inquiries and support requests</p>
+                </div>
+                <div class="content-card">
+                    <h3>📞 Call Us</h3>
+                    <p style="font-size: 1.1rem; color: var(--color-gold); margin-top: 1rem;">+1 (555) 123-4567</p>
+                    <p style="margin-top: 1rem; font-size: 0.9rem;">Monday - Friday, 9AM - 6PM EST</p>
+                </div>
+                <div class="content-card">
+                    <h3>🏢 Visit Our Office</h3>
+                    <p style="font-size: 1rem; color: var(--color-gold); margin-top: 1rem;">123 Analytics Boulevard<br>San Francisco, CA 94105<br>United States</p>
+                    <p style="margin-top: 1rem; font-size: 0.9rem;">Schedule a tour and meet our team</p>
+                </div>
+                <div class="content-card">
+                    <h3>💬 Live Chat Support</h3>
+                    <p style="margin-top: 1rem; font-size: 0.9rem;">Chat with our team in real-time. Available 24/7 for enterprise clients, business hours for all others.</p>
+                    <button class="btn btn-primary" style="margin-top: 1.2rem;">Start Chat</button>
+                </div>
+            </div>
+            
+            <div class="stats" style="margin-top: 4rem; padding: 4rem 0;">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">98%</div>
+                        <div class="stat-label">Client Satisfaction</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">2.5M+</div>
+                        <div class="stat-label">Data Points Analyzed</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">150+</div>
+                        <div class="stat-label">Enterprise Clients</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">Support Available</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 DataVision Analytics. All rights reserved. Empowering businesses through data.</p>
+        <p class="footer-badge">Marketing by Bao</p>
+    </footer>
+
+    <script>
+        // Chart
+        const ctx = document.getElementById('pieChart').getContext('2d');
+        
+        const data = {
+            labels: ['E-Commerce', 'Technology', 'Healthcare', 'Finance', 'Manufacturing'],
+            datasets: [{
+                label: 'Market Share',
+                data: [30, 25, 20, 15, 10],
+                backgroundColor: [
+                    '#d4af37',
+                    '#f4e4b8',
+                    '#1a2942',
+                    '#64748b',
+                    '#b8941f'
+                ],
+                borderColor: 'rgba(250, 250, 247, 0.1)',
+                borderWidth: 2,
+                hoverOffset: 20
+            }]
+        };
+
+        const config = {
+            type: 'pie',
+            data: data,
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#fafaf7',
+                            font: {
+                                family: 'Manrope',
+                                size: 12,
+                                weight: '500'
+                            },
+                            padding: 15,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(26, 41, 66, 0.95)',
+                        titleColor: '#d4af37',
+                        bodyColor: '#fafaf7',
+                        borderColor: '#d4af37',
+                        borderWidth: 1,
+                        padding: 12,
+                        displayColors: true,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += context.parsed + '%';
+                                return label;
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    animateRotate: true,
+                    animateScale: true,
+                    duration: 2000,
+                    easing: 'easeOutQuart'
+                }
+            }
+        };
+
+        const pieChart = new Chart(ctx, config);
+
+        ctx.canvas.addEventListener('mousemove', function(e) {
+            const rect = ctx.canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const moveX = (x - centerX) / 50;
+            const moveY = (y - centerY) / 50;
+            
+            ctx.canvas.style.transform = `perspective(1000px) rotateY(${moveX}deg) rotateX(${-moveY}deg)`;
+        });
+
+        ctx.canvas.addEventListener('mouseleave', function() {
+            ctx.canvas.style.transform = 'perspective(1000px) rotateY(0deg) rotateX(0deg)';
+        });
+
+        // Page Navigation
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('.page-section');
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                
+                sections.forEach(section => {
+                    section.classList.remove('active');
+                });
+                
+                document.getElementById(targetId).classList.add('active');
+                
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
