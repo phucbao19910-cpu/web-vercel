@@ -1,1056 +1,455 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DataVision Analytics - Marketing by Bao</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-    <style>
-        :root {
-            --color-deep-navy: #0a1628;
-            --color-navy: #1a2942;
-            --color-gold: #d4af37;
-            --color-light-gold: #f4e4b8;
-            --color-white: #ffffff;
-            --color-cream: #fafaf7;
-            --color-slate: #64748b;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Manrope', sans-serif;
-            background: var(--color-deep-navy);
-            color: var(--color-cream);
-            overflow-x: hidden;
-            line-height: 1.6;
-        }
-
-        .bg-animation {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            overflow: hidden;
-        }
-
-        .bg-animation::before {
-            content: '';
-            position: absolute;
-            width: 200%;
-            height: 200%;
-            background: 
-                radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(26, 41, 66, 0.5) 0%, transparent 50%);
-            animation: bgShift 15s ease-in-out infinite;
-        }
-
-        @keyframes bgShift {
-            0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(-50px, -50px); }
-        }
-
-        /* Top Navigation */
-        .top-nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            background: rgba(10, 22, 40, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
-        }
-
-        .nav-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1.2rem 3rem;
-        }
-
-        .logo {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.8rem;
-            font-weight: 900;
-            color: var(--color-gold);
-            letter-spacing: -1px;
-        }
-
-        .nav-actions {
-            display: flex;
-            gap: 1rem;
-        }
-
-        /* Navigation Links Container */
-        .nav-links-container {
-            max-height: 50px;
-            overflow: hidden;
-            transition: max-height 0.4s ease;
-            background: rgba(26, 41, 66, 0.5);
-            border-top: 1px solid rgba(212, 175, 55, 0.1);
-        }
-
-        .top-nav:hover .nav-links-container {
-            max-height: 500px;
-        }
-
-        .nav-links {
-            display: flex;
-            flex-wrap: wrap;
-            padding: 0.8rem 3rem;
-            gap: 0.5rem 2rem;
-        }
-
-        .nav-link {
-            color: var(--color-cream);
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 500;
-            padding: 0.4rem 0;
-            transition: color 0.3s ease;
-            position: relative;
-            cursor: pointer;
-        }
-
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: var(--color-gold);
-            transition: width 0.3s ease;
-        }
-
-        .nav-link:hover {
-            color: var(--color-gold);
-        }
-
-        .nav-link:hover::after {
-            width: 100%;
-        }
-
-        .nav-link.active {
-            color: var(--color-gold);
-            font-weight: 600;
-        }
-
-        .nav-divider {
-            width: 100%;
-            height: 1px;
-            background: rgba(212, 175, 55, 0.1);
-            margin: 0.3rem 0;
-        }
-
-        .nav-more-indicator {
-            text-align: center;
-            padding: 0.5rem;
-            color: var(--color-slate);
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-
-        .top-nav:hover .nav-more-indicator {
-            display: none;
-        }
-
-        .btn {
-            padding: 0.7rem 1.8rem;
-            font-size: 0.9rem;
-            font-weight: 600;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--color-gold), #b8941f);
-            color: var(--color-deep-navy);
-            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 40px rgba(212, 175, 55, 0.4);
-        }
-
-        .btn-secondary {
-            background: transparent;
-            color: var(--color-cream);
-            border: 2px solid var(--color-gold);
-        }
-
-        .btn-secondary:hover {
-            background: var(--color-gold);
-            color: var(--color-deep-navy);
-            transform: translateY(-2px);
-        }
-
-        /* Main Content */
-        .main-content {
-            margin-top: 100px;
-            padding: 3rem;
-            min-height: calc(100vh - 100px);
-        }
-
-        .page-section {
-            display: none;
-            animation: fadeInUp 0.6s ease-out;
-        }
-
-        .page-section.active {
-            display: block;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .page-content {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .page-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 3.5rem;
-            font-weight: 900;
-            color: var(--color-gold);
-            margin-bottom: 1.5rem;
-        }
-
-        .page-subtitle {
-            font-size: 1.2rem;
-            color: var(--color-slate);
-            margin-bottom: 3rem;
-        }
-
-        .marketing-badge {
-            display: inline-block;
-            background: linear-gradient(135deg, var(--color-gold), #b8941f);
-            color: var(--color-deep-navy);
-            padding: 0.4rem 1.2rem;
-            border-radius: 50px;
-            font-weight: 700;
-            font-size: 0.85rem;
-            margin-bottom: 1rem;
-        }
-
-        /* Hero Section */
-        .hero-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-            align-items: center;
-            margin-top: 2rem;
-        }
-
-        .hero-text h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 4rem;
-            font-weight: 900;
-            line-height: 1.1;
-            margin-bottom: 1.5rem;
-            color: var(--color-white);
-        }
-
-        .hero-text h1 .highlight {
-            color: var(--color-gold);
-            display: block;
-        }
-
-        .hero-text p {
-            font-size: 1.15rem;
-            color: var(--color-slate);
-            margin-bottom: 2rem;
-            line-height: 1.8;
-        }
-
-        .cta-buttons {
-            display: flex;
-            gap: 1.2rem;
-        }
-
-        /* Chart */
-        .chart-wrapper {
-            background: linear-gradient(135deg, rgba(26, 41, 66, 0.6), rgba(10, 22, 40, 0.4));
-            backdrop-filter: blur(20px);
-            padding: 2.5rem;
-            border-radius: 25px;
-            border: 1px solid rgba(212, 175, 55, 0.2);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-        }
-
-        .chart-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.6rem;
-            color: var(--color-gold);
-            margin-bottom: 1.5rem;
-            text-align: center;
-        }
-
-        canvas {
-            max-height: 350px;
-        }
-
-        /* Chart Creator */
-        .chart-creator {
-            background: rgba(26, 41, 66, 0.4);
-            padding: 2.5rem;
-            border-radius: 20px;
-            border: 1px solid rgba(212, 175, 55, 0.15);
-            margin-top: 3rem;
-        }
-
-        .input-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .input-group label {
-            display: block;
-            color: var(--color-gold);
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            font-size: 0.95rem;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 0.8rem 1rem;
-            background: rgba(10, 22, 40, 0.6);
-            border: 1px solid rgba(212, 175, 55, 0.2);
-            border-radius: 10px;
-            color: var(--color-cream);
-            font-size: 0.95rem;
-            font-family: 'Manrope', sans-serif;
-        }
-
-        .input-group input:focus {
-            outline: none;
-            border-color: var(--color-gold);
-        }
-
-        .data-row {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr auto;
-            gap: 0.8rem;
-            margin-bottom: 0.8rem;
-            align-items: center;
-        }
-
-        .color-input {
-            width: 100%;
-            height: 42px;
-            border-radius: 10px;
-            cursor: pointer;
-            border: 1px solid rgba(212, 175, 55, 0.2);
-        }
-
-        .btn-add {
-            background: rgba(212, 175, 55, 0.2);
-            color: var(--color-gold);
-            border: 1px solid var(--color-gold);
-            padding: 0.6rem 1.5rem;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            margin-top: 0.5rem;
-        }
-
-        .btn-add:hover {
-            background: var(--color-gold);
-            color: var(--color-deep-navy);
-        }
-
-        .btn-remove {
-            background: rgba(220, 53, 69, 0.2);
-            color: #dc3545;
-            border: 1px solid #dc3545;
-            padding: 0.6rem 1rem;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: all 0.3s ease;
-        }
-
-        .btn-remove:hover {
-            background: #dc3545;
-            color: white;
-        }
-
-        .preview-chart {
-            margin-top: 2rem;
-            padding: 2rem;
-            background: rgba(10, 22, 40, 0.6);
-            border-radius: 15px;
-            border: 1px solid rgba(212, 175, 55, 0.2);
-        }
-
-        /* Content Grid */
-        .content-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 2rem;
-            margin-top: 2rem;
-        }
-
-        .content-card {
-            background: rgba(26, 41, 66, 0.4);
-            padding: 2rem;
-            border-radius: 20px;
-            border: 1px solid rgba(212, 175, 55, 0.15);
-            transition: all 0.3s ease;
-        }
-
-        .content-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(212, 175, 55, 0.3);
-        }
-
-        .content-card h3 {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.6rem;
-            color: var(--color-gold);
-            margin-bottom: 1rem;
-        }
-
-        .content-card p {
-            color: var(--color-slate);
-            line-height: 1.7;
-            font-size: 0.95rem;
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 2000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(10, 22, 40, 0.95);
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        .modal.active {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background: linear-gradient(135deg, var(--color-navy), var(--color-deep-navy));
-            padding: 2rem;
-            border-radius: 20px;
-            border: 2px solid var(--color-gold);
-            max-width: 900px;
-            width: 90%;
-            position: relative;
-            animation: slideUp 0.4s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes slideUp {
-            from { 
-                opacity: 0;
-                transform: translateY(50px);
-            }
-            to { 
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            font-size: 2rem;
-            color: var(--color-gold);
-            cursor: pointer;
-            background: none;
-            border: none;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: background 0.3s ease;
-        }
-
-        .modal-close:hover {
-            background: rgba(212, 175, 55, 0.1);
-        }
-
-        .modal-content h2 {
-            font-family: 'Playfair Display', serif;
-            color: var(--color-gold);
-            margin-bottom: 1.5rem;
-            font-size: 2rem;
-        }
-
-        .video-wrapper {
-            position: relative;
-            padding-bottom: 56.25%;
-            height: 0;
-            overflow: hidden;
-            border-radius: 10px;
-            background: #000;
-        }
-
-        .video-wrapper iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-
-        footer {
-            padding: 2rem 3rem;
-            background: var(--color-navy);
-            border-top: 1px solid rgba(212, 175, 55, 0.2);
-            text-align: center;
-        }
-
-        footer p {
-            color: var(--color-slate);
-            font-size: 0.9rem;
-        }
-
-        .footer-badge {
-            display: inline-block;
-            color: var(--color-gold);
-            font-weight: 700;
-            margin-top: 0.5rem;
-        }
-
-        @media (max-width: 1024px) {
-            .hero-content {
-                grid-template-columns: 1fr;
-            }
-            .content-grid {
-                grid-template-columns: 1fr;
-            }
-            .nav-header {
-                padding: 1rem 2rem;
-            }
-            .nav-links {
-                padding: 0.8rem 2rem;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .main-content {
-                padding: 2rem 1.5rem;
-            }
-            .page-title {
-                font-size: 2.5rem;
-            }
-            .hero-text h1 {
-                font-size: 2.5rem;
-            }
-            .nav-header {
-                flex-direction: column;
-                gap: 1rem;
-            }
-            .nav-actions {
-                width: 100%;
-                justify-content: center;
-            }
-            .data-row {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🥥 COCONUT GOLD 🥥</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --gold: #FFD700;
+      --gold-light: #FFF0A0;
+      --gold-deep: #B8860B;
+      --gold-dark: #7B5800;
+      --brown: #3B1F00;
+      --cream: #FFF8E7;
+      --coconut: #C8A96A;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #1a0e00;
+      font-family: 'Cormorant Garamond', serif;
+      color: var(--gold);
+      overflow-x: hidden;
+      min-height: 100vh;
+      cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><text y='28' font-size='28'>🥥</text></svg>") 16 16, auto;
+    }
+
+    /* ── Animated gold particle background ── */
+    .bg-canvas {
+      position: fixed; inset: 0; z-index: 0;
+      background: radial-gradient(ellipse at 20% 50%, #3a1800 0%, #1a0e00 60%),
+                  radial-gradient(ellipse at 80% 20%, #2a1500 0%, transparent 50%);
+    }
+    .particle {
+      position: fixed; border-radius: 50%;
+      background: radial-gradient(circle, var(--gold) 0%, transparent 70%);
+      animation: float linear infinite;
+      pointer-events: none; z-index: 0;
+    }
+
+    @keyframes float {
+      0%   { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+      10%  { opacity: 1; }
+      90%  { opacity: 0.6; }
+      100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* ── Main container ── */
+    .wrapper {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 40px 20px 80px;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header { text-align: center; margin-bottom: 50px; animation: fadeDown .9s ease both; }
+
+    .crown { font-size: 3rem; display: block; margin-bottom: -10px; animation: spin 8s linear infinite; }
+    @keyframes spin { 0%,100%{transform:rotate(-5deg)} 50%{transform:rotate(5deg)} }
+
+    h1 {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: clamp(2.5rem, 8vw, 5.5rem);
+      font-weight: 900;
+      background: linear-gradient(135deg, #7B5800 0%, #FFD700 30%, #FFF0A0 50%, #FFD700 70%, #B8860B 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: none;
+      letter-spacing: 0.05em;
+      line-height: 1.1;
+      filter: drop-shadow(0 0 30px rgba(255,215,0,0.5));
+    }
+
+    .subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1.3rem;
+      color: var(--coconut);
+      letter-spacing: 0.3em;
+      margin-top: 8px;
+      opacity: 0.85;
+    }
+
+    /* ── Coconut emblem ── */
+    .emblem {
+      font-size: 6rem;
+      display: block;
+      margin: 10px auto 30px;
+      filter: drop-shadow(0 0 20px rgba(255,215,0,0.8));
+      animation: pulse 3s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { transform: scale(1); filter: drop-shadow(0 0 20px rgba(255,215,0,0.6)); }
+      50%      { transform: scale(1.08); filter: drop-shadow(0 0 40px rgba(255,215,0,1)); }
+    }
+
+    /* ── Divider ── */
+    .divider {
+      width: 300px; height: 2px; margin: 10px auto 40px;
+      background: linear-gradient(90deg, transparent, var(--gold), #FFF0A0, var(--gold), transparent);
+      border-radius: 2px;
+      box-shadow: 0 0 12px rgba(255,215,0,0.6);
+    }
+
+    /* ── Buttons ── */
+    .btn-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      max-width: 700px;
+      width: 100%;
+      margin-bottom: 40px;
+      animation: fadeUp .9s .3s ease both;
+    }
+
+    .btn {
+      position: relative; overflow: hidden;
+      padding: 18px 28px;
+      border: 2px solid var(--gold-deep);
+      border-radius: 4px;
+      background: linear-gradient(145deg, rgba(60,30,0,0.9), rgba(30,12,0,0.95));
+      color: var(--gold);
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 20px rgba(255,215,0,0.15), inset 0 1px 0 rgba(255,215,0,0.1);
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,215,0,0.15) 0%, transparent 60%);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .btn:hover::before { opacity: 1; }
+
+    .btn::after {
+      content: '';
+      position: absolute; top: 50%; left: 50%;
+      width: 0; height: 0;
+      background: rgba(255,215,0,0.25);
+      border-radius: 50%;
+      transform: translate(-50%,-50%);
+      transition: width .5s ease, height .5s ease, opacity .5s ease;
+      opacity: 0;
+    }
+    .btn:active::after { width: 300px; height: 300px; opacity: 0; }
+
+    .btn:hover {
+      border-color: var(--gold);
+      color: var(--gold-light);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(255,215,0,0.35), inset 0 1px 0 rgba(255,215,0,0.2);
+    }
+
+    .btn.primary {
+      background: linear-gradient(145deg, #7B5800, #3a2000);
+      border-color: var(--gold);
+    }
+    .btn.primary:hover {
+      background: linear-gradient(145deg, #B8860B, #7B5800);
+      box-shadow: 0 8px 40px rgba(255,215,0,0.5);
+    }
+
+    .btn-icon { margin-right: 8px; font-size: 1.1em; }
+
+    /* ── Secret button (hidden, revealed on hover near bottom-right) ── */
+    .secret-zone {
+      position: fixed;
+      bottom: 20px; right: 20px;
+      width: 50px; height: 50px;
+      z-index: 10;
+    }
+    .secret-btn {
+      position: absolute; inset: 0;
+      border: 1px solid rgba(255,215,0,0.08);
+      border-radius: 50%;
+      background: rgba(255,215,0,0.03);
+      cursor: pointer;
+      transition: all 0.4s ease;
+      font-size: 0;
+      color: transparent;
+    }
+    .secret-btn:hover, .secret-btn.revealed {
+      background: rgba(255,215,0,0.15);
+      border-color: var(--gold);
+      font-size: 1.5rem;
+      color: var(--gold);
+      box-shadow: 0 0 20px rgba(255,215,0,0.6);
+      transform: scale(1.2);
+    }
+    .secret-hint {
+      position: absolute; right: 60px; bottom: 10px;
+      white-space: nowrap;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 0.8rem;
+      color: rgba(255,215,0,0.35);
+      opacity: 0;
+      transition: opacity 0.4s;
+      pointer-events: none;
+    }
+    .secret-zone:hover .secret-hint { opacity: 1; }
+
+    /* ── Notification toast ── */
+    .toast {
+      position: fixed; bottom: 80px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: linear-gradient(135deg, rgba(60,30,0,0.98), rgba(30,12,0,0.98));
+      border: 1px solid var(--gold);
+      color: var(--gold-light);
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 0.8rem;
+      padding: 14px 28px;
+      border-radius: 4px;
+      box-shadow: 0 0 30px rgba(255,215,0,0.4);
+      opacity: 0;
+      transition: all 0.4s ease;
+      z-index: 999;
+      pointer-events: none;
+      text-align: center;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── Info section ── */
+    .info-card {
+      max-width: 600px; width: 100%;
+      border: 1px solid rgba(255,215,0,0.2);
+      border-radius: 4px;
+      padding: 30px;
+      background: rgba(20,10,0,0.7);
+      backdrop-filter: blur(4px);
+      margin-top: 10px;
+      animation: fadeUp .9s .5s ease both;
+    }
+    .info-card h2 {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 1rem;
+      letter-spacing: 0.2em;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+    .info-card p {
+      font-size: 1.05rem;
+      line-height: 1.8;
+      color: var(--coconut);
+      font-style: italic;
+    }
+
+    /* ── Gold bar ornament ── */
+    .ornament {
+      font-size: 1.5rem;
+      letter-spacing: 0.5em;
+      color: rgba(255,215,0,0.4);
+      margin: 30px 0 10px;
+    }
+
+    @keyframes fadeDown { from{opacity:0;transform:translateY(-30px)} to{opacity:1;transform:none} }
+    @keyframes fadeUp   { from{opacity:0;transform:translateY(30px)}  to{opacity:1;transform:none} }
+
+    /* ── Shimmer overlay on main title ── */
+    .shimmer-wrap { position: relative; display: inline-block; }
+    .shimmer-wrap::after {
+      content: '';
+      position: absolute; top: 0; left: -100%;
+      width: 60%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      animation: shimmer 3.5s linear infinite;
+      pointer-events: none;
+    }
+    @keyframes shimmer { to { left: 200%; } }
+  </style>
 </head>
 <body>
-    <div class="bg-animation"></div>
 
-    <!-- Top Navigation -->
-    <nav class="top-nav">
-        <div class="nav-header">
-            <div class="logo">DataVision</div>
-            <div class="nav-actions">
-                <button class="btn btn-secondary" onclick="openDemo()">Watch Demo</button>
-                <button class="btn btn-primary">Start Free Trial</button>
-            </div>
-        </div>
-        <div class="nav-links-container">
-            <div class="nav-links">
-                <a class="nav-link active" data-page="home">Home</a>
-                <a class="nav-link" data-page="about">About</a>
-                <a class="nav-link" data-page="services">Services</a>
-                <a class="nav-link" data-page="solutions">Solutions</a>
-                <a class="nav-link" data-page="pricing">Pricing</a>
-                <a class="nav-link" data-page="testimonials">Testimonials</a>
-                <a class="nav-link" data-page="team">Team</a>
-                <a class="nav-link" data-page="blog">Blog</a>
-                <a class="nav-link" data-page="careers">Careers</a>
-                <a class="nav-link" data-page="chart-creator">Chart Creator</a>
-                <div class="nav-divider"></div>
-                <a class="nav-link" data-page="contact">Contact</a>
-                <a class="nav-link" data-page="partners">Partners</a>
-                <a class="nav-link" data-page="resources">Resources</a>
-                <a class="nav-link" data-page="case-studies">Case Studies</a>
-                <a class="nav-link" data-page="integrations">Integrations</a>
-                <a class="nav-link" data-page="security">Security</a>
-                <a class="nav-link" data-page="api">API</a>
-                <a class="nav-link" data-page="events">Events</a>
-                <a class="nav-link" data-page="support">Support</a>
-                <a class="nav-link" data-page="faq">FAQ</a>
-            </div>
-            <div class="nav-more-indicator">Hover to see more pages ▼</div>
-        </div>
-    </nav>
+<div class="bg-canvas" id="bgCanvas"></div>
 
-    <!-- Demo Modal -->
-    <div id="demoModal" class="modal">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeDemo()">&times;</button>
-            <h2>Watch Our Platform Demo</h2>
-            <div class="video-wrapper">
-                <iframe 
-                    src="https://www.youtube.com/embed/jGwO_UgTS7I" 
-                    frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowfullscreen>
-                </iframe>
-            </div>
-            <p style="margin-top: 1.5rem; color: var(--color-slate);">
-                See how DataVision can transform your business with powerful analytics.
-            </p>
-        </div>
+<div class="wrapper">
+  <header>
+    <span class="crown">👑</span>
+    <div class="shimmer-wrap">
+      <h1>COCONUT<br/>GOLD</h1>
     </div>
+    <p class="subtitle">✦ the golden island experience ✦</p>
+  </header>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        
-        <!-- Page: Home -->
-        <section class="page-section active" id="home">
-            <div class="page-content">
-                <div class="marketing-badge">Marketing by Bao</div>
-                <div class="hero-content">
-                    <div class="hero-text">
-                        <h1>
-                            Transform Data Into
-                            <span class="highlight">Strategic Insights</span>
-                        </h1>
-                        <p>Unlock the power of advanced analytics and visualization. Make data-driven decisions that propel your business forward.</p>
-                        <div class="cta-buttons">
-                            <button class="btn btn-primary">Start Free Trial</button>
-                            <button class="btn btn-secondary" onclick="openDemo()">Watch Demo</button>
-                        </div>
-                    </div>
-                    <div class="chart-wrapper">
-                        <h3 class="chart-title">Market Distribution</h3>
-                        <canvas id="homeChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </section>
+  <span class="emblem">🥥</span>
+  <div class="divider"></div>
 
-        <!-- Page: Chart Creator -->
-        <section class="page-section" id="chart-creator">
-            <div class="page-content">
-                <div class="marketing-badge">Marketing by Bao</div>
-                <h2 class="page-title">Pie Chart Creator</h2>
-                <p class="page-subtitle">Create custom pie charts with your own data in real-time.</p>
-                
-                <div class="chart-creator">
-                    <div class="input-group">
-                        <label>Chart Title</label>
-                        <input type="text" id="chartTitle" placeholder="Enter chart title" value="My Custom Chart">
-                    </div>
+  <div class="btn-grid">
+    <button class="btn primary" onclick="playCoconutSong()">
+      <span class="btn-icon">🎵</span> Play the Song
+    </button>
+    <button class="btn" onclick="crackCoconut()">
+      <span class="btn-icon">🥥</span> Crack a Coconut
+    </button>
+    <button class="btn" onclick="sipDrink()">
+      <span class="btn-icon">🍹</span> Sip a Drink
+    </button>
+    <button class="btn" onclick="goldenShower()">
+      <span class="btn-icon">✨</span> Golden Rain
+    </button>
+    <button class="btn" onclick="danceTropics()">
+      <span class="btn-icon">💃</span> Dance Tropically
+    </button>
+    <button class="btn" onclick="findTreasure()">
+      <span class="btn-icon">🏴‍☠️</span> Find Treasure
+    </button>
+  </div>
 
-                    <div class="input-group">
-                        <label>Data Points</label>
-                        <div id="dataInputs"></div>
-                        <button class="btn-add" onclick="addDataPoint()">+ Add Data Point</button>
-                    </div>
+  <div class="info-card">
+    <h2>✦ About Coconut Gold ✦</h2>
+    <p>
+      Where the tropics meet the luxury of gold — a land of endless sun,
+      crystalline shores, and coconuts dripping with liquid amber.
+      Every sip, every beat, every grain of sand is pure gold.
+    </p>
+  </div>
 
-                    <button class="btn btn-primary" onclick="updateCustomChart()" style="margin-top: 1rem;">Generate Chart</button>
+  <div class="ornament">⬡ ⬡ ⬡</div>
+</div>
 
-                    <div class="preview-chart">
-                        <canvas id="customChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </section>
+<!-- Secret Button -->
+<div class="secret-zone" id="secretZone">
+  <button class="secret-btn" id="secretBtn" onclick="triggerSecret()" title="">🌴</button>
+  <span class="secret-hint">psst… click me…</span>
+</div>
 
-        <!-- Page: About -->
-        <section class="page-section" id="about">
-            <div class="page-content">
-                <div class="marketing-badge">Marketing by Bao</div>
-                <h2 class="page-title">About DataVision</h2>
-                <p class="page-subtitle">We're revolutionizing how businesses understand and leverage their data.</p>
-                
-                <div class="content-grid">
-                    <div class="content-card">
-                        <h3>Our Mission</h3>
-                        <p>To empower every organization with intelligent data analytics that drives meaningful business outcomes.</p>
-                    </div>
-                    <div class="content-card">
-                        <h3>Our Vision</h3>
-                        <p>A world where data-driven decision making is accessible to all businesses.</p>
-                    </div>
-                    <div class="content-card">
-                        <h3>Our Values</h3>
-                        <p>Innovation first, customer success, data privacy, and continuous improvement.</p>
-                    </div>
-                    <div class="content-card">
-                        <h3>Company History</h3>
-                        <p>Founded in 2020, serving 150+ enterprise clients globally.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
+<!-- Toast -->
+<div class="toast" id="toast"></div>
 
-        <!-- Other Pages -->
-        <section class="page-section" id="services">
-            <div class="page-content">
-                <div class="marketing-badge">Marketing by Bao</div>
-                <h2 class="page-title">Our Services</h2>
-                <p class="page-subtitle">Comprehensive analytics solutions.</p>
-                <div class="content-grid">
-                    <div class="content-card">
-                        <h3>Data Analytics</h3>
-                        <p>Transform raw data into actionable insights.</p>
-                    </div>
-                    <div class="content-card">
-                        <h3>Business Intelligence</h3>
-                        <p>Real-time dashboards and reporting.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
+<script>
+  // ── Floating particles ──
+  const canvas = document.getElementById('bgCanvas');
+  for (let i = 0; i < 35; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = Math.random() * 6 + 2;
+    p.style.cssText = `
+      width:${size}px; height:${size}px;
+      left:${Math.random()*100}%;
+      animation-duration:${6 + Math.random()*12}s;
+      animation-delay:${Math.random()*12}s;
+      opacity:${Math.random()*0.5+0.2};
+    `;
+    canvas.appendChild(p);
+  }
 
-        <section class="page-section" id="solutions">
-            <div class="page-content">
-                <div class="marketing-badge">Marketing by Bao</div>
-                <h2 class="page-title">Industry Solutions</h2>
-                <p class="page-subtitle">Specialized solutions for your industry.</p>
-            </div>
-        </section>
+  // ── Toast helper ──
+  function showToast(msg, duration=2800) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove('show'), duration);
+  }
 
-        <section class="page-section" id="pricing">
-            <div class="page-content">
-                <div class="marketing-badge">Marketing by Bao</div>
-                <h2 class="page-title">Pricing Plans</h2>
-                <p class="page-subtitle">Flexible pricing for your needs.</p>
-            </div>
-        </section>
+  // ── Button actions ──
+  function playCoconutSong() {
+    showToast('🎵 Taking you to the COCONUT SONG! 🥥');
+    setTimeout(() => {
+      window.open('https://www.youtube.com/watch?v=6eSid-8WNwY', '_blank');
+    }, 900);
+  }
 
-        <section class="page-section" id="testimonials">
-            <div class="page-content">
-                <div class="marketing-badge">Marketing by Bao</div>
-                <h2 class="page-title">Client Testimonials</h2>
-                <p class="page-subtitle">What our clients say.</p>
-            </div>
-        </section>
+  function crackCoconut() {
+    showToast('💥 CRACK! Golden coconut water everywhere! 🥥✨');
+    burst(6);
+  }
 
-        <section class="page-section" id="team">
-            <div class="page-content">
-                <div class="marketing-badge">Marketing by Bao</div>
-                <h2 class="page-title">Our Team</h2>
-                <p class="page-subtitle">Meet the experts.</p>
-            </div>
-        </section>
+  function sipDrink() {
+    showToast('🍹 Mmm… tropical gold in every sip…');
+    burst(4);
+  }
 
-        <section class="page-section" id="blog">
-            <div class="page-content">
-                <div class="marketing-badge">Marketing by Bao</div>
-                <h2 class="page-title">Blog</h2>
-                <p class="page-subtitle">Latest analytics trends.</p>
-            </div>
-        </section>
+  function goldenShower() {
+    showToast('✨ Golden rain descends upon you! ☀️');
+    burst(20);
+  }
 
-        <section class="page-section" id="careers">
-            <div class="page-content">
-                <div class="marketing-badge">Marketing by Bao</div>
-                <h2 class="page-title">Careers</h2>
-                <p class="page-subtitle">Join our team.</p>
-            </div>
-        </section>
+  function danceTropics() {
+    const emojis = ['💃','🕺','🌴','🥥','🎶','✨'];
+    showToast(emojis.join(' ') + ' DANCE! ' + emojis.reverse().join(' '));
+    document.querySelector('.emblem').style.animation = 'spin 0.3s linear infinite';
+    setTimeout(() => {
+      document.querySelector('.emblem').style.animation = 'pulse 3s ease-in-out infinite';
+    }, 3000);
+  }
 
-        <section class="page-section" id="contact">
-            <div class="page-content">
-                <div class="marketing-badge">Marketing by Bao</div>
-                <h2 class="page-title">Contact</h2>
-                <p class="page-subtitle">Get in touch.</p>
-            </div>
-        </section>
+  function findTreasure() {
+    showToast('🏴‍☠️ X marks the spot… the treasure is COCONUT GOLD! 💛');
+    burst(10);
+  }
 
-        <section class="page-section" id="partners">
-            <div class="page-content">
-                <div class="marketing-badge">Marketing by Bao</div>
-                <h2 class="page-title">Partners</h2>
-                <p class="page-subtitle">Our trusted partners.</p>
-            </div>
-        </section>
+  // ── Burst effect ──
+  function burst(count) {
+    for (let i = 0; i < count; i++) {
+      const el = document.createElement('div');
+      el.textContent = ['🥥','✨','💛','🌴','⭐'][Math.floor(Math.random()*5)];
+      el.style.cssText = `
+        position:fixed; font-size:${1.5+Math.random()*1.5}rem;
+        left:${20+Math.random()*60}%; top:${20+Math.random()*40}%;
+        pointer-events:none; z-index:999;
+        animation: burstAnim 1.4s ease-out forwards;
+        animation-delay:${Math.random()*0.4}s;
+      `;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2000);
+    }
+  }
+  const burstStyle = document.createElement('style');
+  burstStyle.textContent = `
+    @keyframes burstAnim {
+      0%   { opacity:1; transform: translate(0,0) scale(1); }
+      100% { opacity:0; transform: translate(${['-','+'][Math.round(Math.random())]}${50+Math.random()*80}px, -${80+Math.random()*120}px) scale(0.3) rotate(${Math.random()*360}deg); }
+    }
+  `;
+  document.head.appendChild(burstStyle);
 
-        <section class="page-section" id="resources">
-            <div class="page-content">
-                <div class="marketing-badge">Marketing by Bao</div>
-                <h2 class="page-title">Resources</h2>
-                <p class="page-subtitle">Everything you need.</p>
-            </div>
-        </section>
+  // ── Secret button reveal on hover zone ──
+  const secretBtn = document.getElementById('secretBtn');
+  // Make it slightly visible after 5 seconds so users can find it
+  setTimeout(() => secretBtn.classList.add('revealed'), 5000);
+  setTimeout(() => secretBtn.classList.remove('revealed'), 7500);
 
-        <section class="page-section" id="case-studies">
-            <div class="page-content">
-                <div class="marketing-badge">Marketing by Bao</div>
-                <h2 class="page-title">Case Studies</h2>
-                <p class="page-subtitle">Real results.</p>
-            </div>
-        </section>
+  function triggerSecret() {
+    showToast('🌴 YOU FOUND THE SECRET! 🥥👑 Sending you to the COCONUT SONG!', 3500);
+    burst(18);
+    // Gold flash
+    const flash = document.createElement('div');
+    flash.style.cssText = `
+      position:fixed; inset:0; background:rgba(255,215,0,0.18);
+      pointer-events:none; z-index:998;
+      animation: flashFade 1s ease-out forwards;
+    `;
+    document.body.appendChild(flash);
+    const fs = document.createElement('style');
+    fs.textContent = `@keyframes flashFade { 0%{opacity:1} 100%{opacity:0} }`;
+    document.head.appendChild(fs);
+    setTimeout(() => flash.remove(), 1200);
 
-        <section class="page-section" id="integrations">
-            <div class="page-content">
-                <div class="marketing-badge">Marketing by Bao</div>
-                <h2 class="page-title">Integrations</h2>
-                <p class="page-subtitle">Connect your tools.</p>
-            </div>
-        </section>
-
-        <section class="page-section" id="security">
-            <div class="page-content">
-                <div class="marketing-badge">Marketing by Bao</div>
-                <h2 class="page-title">Security</h2>
-                <p class="page-subtitle">Enterprise-grade security.</p>
-            </div>
-        </section>
-
-        <section class="page-section" id="api">
-            <div class="page-content">
-                <div class="marketing-badge">Marketing by Bao</div>
-                <h2 class="page-title">API</h2>
-                <p class="page-subtitle">Developer tools.</p>
-            </div>
-        </section>
-
-        <section class="page-section" id="events">
-            <div class="page-content">
-                <div class="marketing-badge">Marketing by Bao</div>
-                <h2 class="page-title">Events</h2>
-                <p class="page-subtitle">Upcoming events.</p>
-            </div>
-        </section>
-
-        <section class="page-section" id="support">
-            <div class="page-content">
-                <div class="marketing-badge">Marketing by Bao</div>
-                <h2 class="page-title">Support</h2>
-                <p class="page-subtitle">We're here to help.</p>
-            </div>
-        </section>
-
-        <section class="page-section" id="faq">
-            <div class="page-content">
-                <div class="marketing-badge">Marketing by Bao</div>
-                <h2 class="page-title">FAQ</h2>
-                <p class="page-subtitle">Common questions.</p>
-            </div>
-        </section>
-
-    </div>
-
-    <footer>
-        <p>&copy; 2026 DataVision Analytics. All rights reserved.</p>
-        <p class="footer-badge">Marketing by Bao</p>
-    </footer>
-
-    <script>
-        // Home Chart
-        const homeCtx = document.getElementById('homeChart').getContext('2d');
-        const homeChart = new Chart(homeCtx, {
-            type: 'pie',
-            data: {
-                labels: ['E-Commerce', 'Technology', 'Healthcare', 'Finance', 'Manufacturing'],
-                datasets: [{
-                    data: [30, 25, 20, 15, 10],
-                    backgroundColor: ['#d4af37', '#f4e4b8', '#1a2942', '#64748b', '#b8941f'],
-                    borderColor: 'rgba(250, 250, 247, 0.1)',
-                    borderWidth: 2,
-                    hoverOffset: 20
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            color: '#fafaf7',
-                            font: { family: 'Manrope', size: 12, weight: '500' },
-                            padding: 15
-                        }
-                    }
-                }
-            }
-        });
-
-        // Chart Creator
-        let customChart = null;
-        let dataPoints = [
-            { label: 'Category A', value: 30, color: '#d4af37' },
-            { label: 'Category B', value: 25, color: '#f4e4b8' },
-            { label: 'Category C', value: 20, color: '#1a2942' }
-        ];
-
-        function renderDataInputs() {
-            const container = document.getElementById('dataInputs');
-            container.innerHTML = '';
-            
-            dataPoints.forEach((point, index) => {
-                const row = document.createElement('div');
-                row.className = 'data-row';
-                row.innerHTML = `
-                    <input type="text" placeholder="Label" value="${point.label}" 
-                           onchange="updateDataPoint(${index}, 'label', this.value)">
-                    <input type="number" placeholder="Value" value="${point.value}" 
-                           onchange="updateDataPoint(${index}, 'value', this.value)">
-                    <input type="color" class="color-input" value="${point.color}" 
-                           onchange="updateDataPoint(${index}, 'color', this.value)">
-                    ${dataPoints.length > 1 ? `<button class="btn-remove" onclick="removeDataPoint(${index})">Remove</button>` : ''}
-                `;
-                container.appendChild(row);
-            });
-        }
-
-        function addDataPoint() {
-            const colors = ['#64748b', '#b8941f', '#f4e4b8', '#1a2942', '#d4af37', '#8b7355', '#c9a961'];
-            dataPoints.push({
-                label: `Category ${String.fromCharCode(65 + dataPoints.length)}`,
-                value: 15,
-                color: colors[dataPoints.length % colors.length]
-            });
-            renderDataInputs();
-        }
-
-        function removeDataPoint(index) {
-            if (dataPoints.length > 1) {
-                dataPoints.splice(index, 1);
-                renderDataInputs();
-            }
-        }
-
-        function updateDataPoint(index, field, value) {
-            if (field === 'value') {
-                dataPoints[index][field] = parseFloat(value) || 0;
-            } else {
-                dataPoints[index][field] = value;
-            }
-        }
-
-        function updateCustomChart() {
-            const title = document.getElementById('chartTitle').value;
-            const ctx = document.getElementById('customChart').getContext('2d');
-            
-            if (customChart) {
-                customChart.destroy();
-            }
-            
-            customChart = new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: dataPoints.map(p => p.label),
-                    datasets: [{
-                        data: dataPoints.map(p => p.value),
-                        backgroundColor: dataPoints.map(p => p.color),
-                        borderColor: 'rgba(250, 250, 247, 0.1)',
-                        borderWidth: 2,
-                        hoverOffset: 20
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: title,
-                            color: '#d4af37',
-                            font: { family: 'Playfair Display', size: 20, weight: '900' }
-                        },
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                color: '#fafaf7',
-                                font: { family: 'Manrope', size: 12 },
-                                padding: 15
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        // Initialize
-        renderDataInputs();
-        updateCustomChart();
-
-        // Navigation
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', function() {
-                const page = this.getAttribute('data-page');
-                
-                // Update active state
-                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-                this.classList.add('active');
-                
-                // Show page
-                document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
-                document.getElementById(page).classList.add('active');
-                
-                // Scroll to top
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            });
-        });
-
-        // Demo Modal
-        function openDemo() {
-            document.getElementById('demoModal').classList.add('active');
-        }
-
-        function closeDemo() {
-            document.getElementById('demoModal').classList.remove('active');
-        }
-
-        document.getElementById('demoModal').addEventListener('click', function(e) {
-            if (e.target === this) closeDemo();
-        });
-
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') closeDemo();
-        });
-    </script>
+    setTimeout(() => {
+      window.open('https://www.youtube.com/watch?v=6eSid-8WNwY', '_blank');
+    }, 1500);
+  }
+</script>
 </body>
 </html>
