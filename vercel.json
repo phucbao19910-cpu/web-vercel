@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "name": "coconut-gold",
   "builds": [
     {
       "src": "index.html",
@@ -10,6 +11,15 @@
     {
       "src": "/(.*)",
       "dest": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=3600" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" }
+      ]
     }
   ]
 }
