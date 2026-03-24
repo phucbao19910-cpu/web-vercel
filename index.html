@@ -1,455 +1,662 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>🥥 COCONUT GOLD 🥥</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet"/>
-  <style>
-    :root {
-      --gold: #FFD700;
-      --gold-light: #FFF0A0;
-      --gold-deep: #B8860B;
-      --gold-dark: #7B5800;
-      --brown: #3B1F00;
-      --cream: #FFF8E7;
-      --coconut: #C8A96A;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hydroelectric Energy</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --deep: #0a1628;
+    --navy: #0d2240;
+    --blue: #1565c0;
+    --cyan: #00b4d8;
+    --aqua: #48cae4;
+    --mist: #90e0ef;
+    --foam: #caf0f8;
+    --white: #f0f8ff;
+    --gold: #f4c430;
+    --text: #e8f4f8;
+    --muted: #8ab4c4;
+  }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    body {
-      background: #1a0e00;
-      font-family: 'Cormorant Garamond', serif;
-      color: var(--gold);
-      overflow-x: hidden;
-      min-height: 100vh;
-      cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><text y='28' font-size='28'>🥥</text></svg>") 16 16, auto;
-    }
+  body {
+    background: var(--deep);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
 
-    /* ── Animated gold particle background ── */
-    .bg-canvas {
-      position: fixed; inset: 0; z-index: 0;
-      background: radial-gradient(ellipse at 20% 50%, #3a1800 0%, #1a0e00 60%),
-                  radial-gradient(ellipse at 80% 20%, #2a1500 0%, transparent 50%);
-    }
-    .particle {
-      position: fixed; border-radius: 50%;
-      background: radial-gradient(circle, var(--gold) 0%, transparent 70%);
-      animation: float linear infinite;
-      pointer-events: none; z-index: 0;
-    }
+  /* Animated water background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 80%, rgba(0,180,216,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 80% at 80% 20%, rgba(21,101,192,0.15) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 50% at 50% 50%, rgba(13,34,64,0.8) 0%, var(--deep) 100%);
+    z-index: 0;
+    pointer-events: none;
+  }
 
-    @keyframes float {
-      0%   { transform: translateY(110vh) rotate(0deg); opacity: 0; }
-      10%  { opacity: 1; }
-      90%  { opacity: 0.6; }
-      100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
-    }
+  /* Flowing water lines */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(
+        -30deg,
+        transparent 0px,
+        transparent 40px,
+        rgba(0,180,216,0.03) 40px,
+        rgba(0,180,216,0.03) 41px
+      );
+    z-index: 0;
+    pointer-events: none;
+    animation: drift 20s linear infinite;
+  }
 
-    /* ── Main container ── */
-    .wrapper {
-      position: relative; z-index: 1;
-      display: flex; flex-direction: column; align-items: center;
-      padding: 40px 20px 80px;
-      min-height: 100vh;
-    }
+  @keyframes drift {
+    from { background-position: 0 0; }
+    to { background-position: 200px 400px; }
+  }
 
-    /* ── Header ── */
-    header { text-align: center; margin-bottom: 50px; animation: fadeDown .9s ease both; }
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 60px 40px 100px;
+  }
 
-    .crown { font-size: 3rem; display: block; margin-bottom: -10px; animation: spin 8s linear infinite; }
-    @keyframes spin { 0%,100%{transform:rotate(-5deg)} 50%{transform:rotate(5deg)} }
+  /* ── HERO ── */
+  .hero {
+    text-align: center;
+    padding: 60px 0 80px;
+    position: relative;
+  }
 
-    h1 {
-      font-family: 'Cinzel Decorative', serif;
-      font-size: clamp(2.5rem, 8vw, 5.5rem);
-      font-weight: 900;
-      background: linear-gradient(135deg, #7B5800 0%, #FFD700 30%, #FFF0A0 50%, #FFD700 70%, #B8860B 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text;
-      text-shadow: none;
-      letter-spacing: 0.05em;
-      line-height: 1.1;
-      filter: drop-shadow(0 0 30px rgba(255,215,0,0.5));
-    }
+  .hero-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.2s;
+  }
 
-    .subtitle {
-      font-family: 'Cormorant Garamond', serif;
-      font-style: italic;
-      font-size: 1.3rem;
-      color: var(--coconut);
-      letter-spacing: 0.3em;
-      margin-top: 8px;
-      opacity: 0.85;
-    }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(52px, 8vw, 88px);
+    font-weight: 900;
+    line-height: 1.0;
+    letter-spacing: -2px;
+    color: var(--white);
+    opacity: 0;
+    animation: fadeUp 0.9s ease forwards 0.4s;
+  }
 
-    /* ── Coconut emblem ── */
-    .emblem {
-      font-size: 6rem;
-      display: block;
-      margin: 10px auto 30px;
-      filter: drop-shadow(0 0 20px rgba(255,215,0,0.8));
-      animation: pulse 3s ease-in-out infinite;
-    }
-    @keyframes pulse {
-      0%,100% { transform: scale(1); filter: drop-shadow(0 0 20px rgba(255,215,0,0.6)); }
-      50%      { transform: scale(1.08); filter: drop-shadow(0 0 40px rgba(255,215,0,1)); }
-    }
+  .hero h1 span {
+    display: block;
+    background: linear-gradient(135deg, var(--cyan), var(--aqua), var(--mist));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 
-    /* ── Divider ── */
-    .divider {
-      width: 300px; height: 2px; margin: 10px auto 40px;
-      background: linear-gradient(90deg, transparent, var(--gold), #FFF0A0, var(--gold), transparent);
-      border-radius: 2px;
-      box-shadow: 0 0 12px rgba(255,215,0,0.6);
-    }
+  .hero-sub {
+    margin-top: 20px;
+    font-size: 16px;
+    color: var(--muted);
+    font-weight: 300;
+    letter-spacing: 0.5px;
+    opacity: 0;
+    animation: fadeUp 0.9s ease forwards 0.6s;
+  }
 
-    /* ── Buttons ── */
-    .btn-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 20px;
-      max-width: 700px;
-      width: 100%;
-      margin-bottom: 40px;
-      animation: fadeUp .9s .3s ease both;
-    }
+  /* Animated water drop icon */
+  .drop-icon {
+    display: flex;
+    justify-content: center;
+    margin: 32px 0 0;
+    opacity: 0;
+    animation: fadeUp 0.9s ease forwards 0.8s;
+  }
 
-    .btn {
-      position: relative; overflow: hidden;
-      padding: 18px 28px;
-      border: 2px solid var(--gold-deep);
-      border-radius: 4px;
-      background: linear-gradient(145deg, rgba(60,30,0,0.9), rgba(30,12,0,0.95));
-      color: var(--gold);
-      font-family: 'Cinzel Decorative', serif;
-      font-size: 0.85rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 20px rgba(255,215,0,0.15), inset 0 1px 0 rgba(255,215,0,0.1);
-    }
+  .drop-icon svg {
+    width: 48px;
+    height: 48px;
+    filter: drop-shadow(0 0 16px rgba(0,180,216,0.6));
+    animation: pulse-drop 3s ease-in-out infinite;
+  }
 
-    .btn::before {
-      content: '';
-      position: absolute; inset: 0;
-      background: linear-gradient(135deg, rgba(255,215,0,0.15) 0%, transparent 60%);
-      opacity: 0; transition: opacity 0.3s;
-    }
-    .btn:hover::before { opacity: 1; }
+  @keyframes pulse-drop {
+    0%, 100% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 16px rgba(0,180,216,0.6)); }
+    50% { transform: translateY(-6px) scale(1.05); filter: drop-shadow(0 0 28px rgba(0,180,216,0.9)); }
+  }
 
-    .btn::after {
-      content: '';
-      position: absolute; top: 50%; left: 50%;
-      width: 0; height: 0;
-      background: rgba(255,215,0,0.25);
-      border-radius: 50%;
-      transform: translate(-50%,-50%);
-      transition: width .5s ease, height .5s ease, opacity .5s ease;
-      opacity: 0;
-    }
-    .btn:active::after { width: 300px; height: 300px; opacity: 0; }
+  /* ── DIVIDER ── */
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--cyan), transparent);
+    margin: 0 0 70px;
+    opacity: 0;
+    animation: fadeIn 1s ease forwards 1s;
+  }
 
-    .btn:hover {
-      border-color: var(--gold);
-      color: var(--gold-light);
-      transform: translateY(-3px);
-      box-shadow: 0 8px 30px rgba(255,215,0,0.35), inset 0 1px 0 rgba(255,215,0,0.2);
-    }
+  /* ── SECTION ── */
+  .section {
+    margin-bottom: 80px;
+    opacity: 0;
+    transform: translateY(30px);
+  }
 
-    .btn.primary {
-      background: linear-gradient(145deg, #7B5800, #3a2000);
-      border-color: var(--gold);
-    }
-    .btn.primary:hover {
-      background: linear-gradient(145deg, #B8860B, #7B5800);
-      box-shadow: 0 8px 40px rgba(255,215,0,0.5);
-    }
+  .section.visible {
+    animation: fadeUp 0.7s ease forwards;
+  }
 
-    .btn-icon { margin-right: 8px; font-size: 1.1em; }
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 32px;
+  }
 
-    /* ── Secret button (hidden, revealed on hover near bottom-right) ── */
-    .secret-zone {
-      position: fixed;
-      bottom: 20px; right: 20px;
-      width: 50px; height: 50px;
-      z-index: 10;
-    }
-    .secret-btn {
-      position: absolute; inset: 0;
-      border: 1px solid rgba(255,215,0,0.08);
-      border-radius: 50%;
-      background: rgba(255,215,0,0.03);
-      cursor: pointer;
-      transition: all 0.4s ease;
-      font-size: 0;
-      color: transparent;
-    }
-    .secret-btn:hover, .secret-btn.revealed {
-      background: rgba(255,215,0,0.15);
-      border-color: var(--gold);
-      font-size: 1.5rem;
-      color: var(--gold);
-      box-shadow: 0 0 20px rgba(255,215,0,0.6);
-      transform: scale(1.2);
-    }
-    .secret-hint {
-      position: absolute; right: 60px; bottom: 10px;
-      white-space: nowrap;
-      font-family: 'Cormorant Garamond', serif;
-      font-style: italic;
-      font-size: 0.8rem;
-      color: rgba(255,215,0,0.35);
-      opacity: 0;
-      transition: opacity 0.4s;
-      pointer-events: none;
-    }
-    .secret-zone:hover .secret-hint { opacity: 1; }
+  .section-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--cyan);
+    letter-spacing: 2px;
+    padding-top: 6px;
+    white-space: nowrap;
+    opacity: 0.7;
+  }
 
-    /* ── Notification toast ── */
-    .toast {
-      position: fixed; bottom: 80px; left: 50%;
-      transform: translateX(-50%) translateY(20px);
-      background: linear-gradient(135deg, rgba(60,30,0,0.98), rgba(30,12,0,0.98));
-      border: 1px solid var(--gold);
-      color: var(--gold-light);
-      font-family: 'Cinzel Decorative', serif;
-      font-size: 0.8rem;
-      padding: 14px 28px;
-      border-radius: 4px;
-      box-shadow: 0 0 30px rgba(255,215,0,0.4);
-      opacity: 0;
-      transition: all 0.4s ease;
-      z-index: 999;
-      pointer-events: none;
-      text-align: center;
-    }
-    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(22px, 3.5vw, 30px);
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--white);
+  }
 
-    /* ── Info section ── */
-    .info-card {
-      max-width: 600px; width: 100%;
-      border: 1px solid rgba(255,215,0,0.2);
-      border-radius: 4px;
-      padding: 30px;
-      background: rgba(20,10,0,0.7);
-      backdrop-filter: blur(4px);
-      margin-top: 10px;
-      animation: fadeUp .9s .5s ease both;
-    }
-    .info-card h2 {
-      font-family: 'Cinzel Decorative', serif;
-      font-size: 1rem;
-      letter-spacing: 0.2em;
-      color: var(--gold);
-      margin-bottom: 12px;
-    }
-    .info-card p {
-      font-size: 1.05rem;
-      line-height: 1.8;
-      color: var(--coconut);
-      font-style: italic;
-    }
+  .section-title em {
+    font-style: italic;
+    color: var(--gold);
+  }
 
-    /* ── Gold bar ornament ── */
-    .ornament {
-      font-size: 1.5rem;
-      letter-spacing: 0.5em;
-      color: rgba(255,215,0,0.4);
-      margin: 30px 0 10px;
-    }
+  .section-body {
+    padding-left: 64px;
+  }
 
-    @keyframes fadeDown { from{opacity:0;transform:translateY(-30px)} to{opacity:1;transform:none} }
-    @keyframes fadeUp   { from{opacity:0;transform:translateY(30px)}  to{opacity:1;transform:none} }
+  /* ── EXPLANATION BLOCK ── */
+  .explanation {
+    font-size: 16px;
+    line-height: 1.75;
+    color: #b0cfd8;
+    margin-bottom: 24px;
+    font-weight: 300;
+  }
 
-    /* ── Shimmer overlay on main title ── */
-    .shimmer-wrap { position: relative; display: inline-block; }
-    .shimmer-wrap::after {
-      content: '';
-      position: absolute; top: 0; left: -100%;
-      width: 60%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-      animation: shimmer 3.5s linear infinite;
-      pointer-events: none;
-    }
-    @keyframes shimmer { to { left: 200%; } }
-  </style>
+  /* ── PROCESS STEPS ── */
+  .process-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+  }
+
+  .process-steps::before {
+    content: '';
+    position: absolute;
+    left: 22px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--cyan), transparent);
+  }
+
+  .step {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    padding: 20px 0;
+  }
+
+  .step-dot {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(0,180,216,0.1);
+    border: 1.5px solid var(--cyan);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--cyan);
+    font-weight: 700;
+    transition: all 0.3s ease;
+    cursor: default;
+  }
+
+  .step:hover .step-dot {
+    background: var(--cyan);
+    color: var(--deep);
+    box-shadow: 0 0 20px rgba(0,180,216,0.5);
+    transform: scale(1.1);
+  }
+
+  .step-content strong {
+    display: block;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--aqua);
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+  }
+
+  .step-content p {
+    font-size: 15px;
+    color: #9bbccc;
+    line-height: 1.65;
+    font-weight: 300;
+  }
+
+  /* ── CARDS (for impact/challenges) ── */
+  .cards {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(0,180,216,0.15);
+    border-radius: 12px;
+    padding: 24px 28px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.35s ease;
+    cursor: default;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: linear-gradient(to bottom, var(--cyan), var(--blue));
+    border-radius: 3px 0 0 3px;
+  }
+
+  .card:hover {
+    background: rgba(0,180,216,0.06);
+    border-color: rgba(0,180,216,0.35);
+    transform: translateX(6px);
+    box-shadow: -6px 0 24px rgba(0,180,216,0.08);
+  }
+
+  .card-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--cyan);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    opacity: 0.6;
+  }
+
+  .card h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--aqua);
+    margin-bottom: 8px;
+    letter-spacing: 0.2px;
+  }
+
+  .card p {
+    font-size: 14.5px;
+    color: #8aacba;
+    line-height: 1.65;
+    font-weight: 300;
+  }
+
+  .card p strong {
+    color: var(--mist);
+    font-weight: 500;
+  }
+
+  /* ── SMALL SCALE BOX ── */
+  .answer-box {
+    background: linear-gradient(135deg, rgba(0,180,216,0.08), rgba(21,101,192,0.06));
+    border: 1px solid rgba(0,180,216,0.2);
+    border-radius: 16px;
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .answer-box::after {
+    content: 'YES';
+    position: absolute;
+    right: -10px;
+    top: -20px;
+    font-family: 'Playfair Display', serif;
+    font-size: 100px;
+    font-weight: 900;
+    color: rgba(0,180,216,0.06);
+    letter-spacing: -4px;
+    pointer-events: none;
+    line-height: 1;
+  }
+
+  .answer-badge {
+    display: inline-block;
+    background: rgba(0,180,216,0.15);
+    border: 1px solid rgba(0,180,216,0.4);
+    color: var(--cyan);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    padding: 6px 16px;
+    border-radius: 100px;
+    margin-bottom: 20px;
+  }
+
+  .answer-body {
+    font-size: 15.5px;
+    color: #9bbccc;
+    line-height: 1.75;
+    font-weight: 300;
+    margin-bottom: 24px;
+  }
+
+  .reason-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .reason {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .reason-icon {
+    width: 28px;
+    height: 28px;
+    background: rgba(0,180,216,0.15);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 13px;
+  }
+
+  .reason-text strong {
+    display: block;
+    font-size: 13.5px;
+    color: var(--aqua);
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+
+  .reason-text p {
+    font-size: 14px;
+    color: #8aacba;
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    border-top: 1px solid rgba(0,180,216,0.1);
+    padding-top: 40px;
+    text-align: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: rgba(255,255,255,0.15);
+    letter-spacing: 2px;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Ripple effect on hover */
+  .card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(0,180,216,0.06), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s;
+    pointer-events: none;
+  }
+  .card:hover::after { opacity: 1; }
+
+  @media (max-width: 600px) {
+    .page { padding: 40px 24px 80px; }
+    .section-body { padding-left: 0; }
+    .section-header { flex-direction: column; gap: 8px; }
+  }
+</style>
 </head>
 <body>
+<div class="page">
 
-<div class="bg-canvas" id="bgCanvas"></div>
-
-<div class="wrapper">
-  <header>
-    <span class="crown">👑</span>
-    <div class="shimmer-wrap">
-      <h1>COCONUT<br/>GOLD</h1>
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-label">Renewable Energy Series</div>
+    <h1>Hydro<span>electric</span><br>Energy</h1>
+    <p class="hero-sub">The science, impact, and future of water-powered electricity</p>
+    <div class="drop-icon">
+      <svg viewBox="0 0 48 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M24 2C24 2 4 22 4 36C4 47.046 13.074 56 24 56C34.926 56 44 47.046 44 36C44 22 24 2 24 2Z" fill="url(#grad)" stroke="#00b4d8" stroke-width="1.5"/>
+        <path d="M14 38C14 38 16 32 24 30" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" stroke-linecap="round"/>
+        <defs>
+          <linearGradient id="grad" x1="24" y1="2" x2="24" y2="56" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#48cae4" stop-opacity="0.8"/>
+            <stop offset="1" stop-color="#1565c0" stop-opacity="0.6"/>
+          </linearGradient>
+        </defs>
+      </svg>
     </div>
-    <p class="subtitle">✦ the golden island experience ✦</p>
-  </header>
+  </div>
 
-  <span class="emblem">🥥</span>
   <div class="divider"></div>
 
-  <div class="btn-grid">
-    <button class="btn primary" onclick="playCoconutSong()">
-      <span class="btn-icon">🎵</span> Play the Song
-    </button>
-    <button class="btn" onclick="crackCoconut()">
-      <span class="btn-icon">🥥</span> Crack a Coconut
-    </button>
-    <button class="btn" onclick="sipDrink()">
-      <span class="btn-icon">🍹</span> Sip a Drink
-    </button>
-    <button class="btn" onclick="goldenShower()">
-      <span class="btn-icon">✨</span> Golden Rain
-    </button>
-    <button class="btn" onclick="danceTropics()">
-      <span class="btn-icon">💃</span> Dance Tropically
-    </button>
-    <button class="btn" onclick="findTreasure()">
-      <span class="btn-icon">🏴‍☠️</span> Find Treasure
-    </button>
+  <!-- Q1 -->
+  <div class="section" data-delay="0">
+    <div class="section-header">
+      <div class="section-num">01 ——</div>
+      <div class="section-title">How is hydroelectric power generated? <em>Explain</em></div>
+    </div>
+    <div class="section-body">
+      <p class="explanation">Hydroelectric power converts the kinetic and potential energy of flowing water into electricity. The process is elegant in its simplicity — gravity does the heavy lifting.</p>
+      <div class="process-steps">
+        <div class="step">
+          <div class="step-dot">01</div>
+          <div class="step-content">
+            <strong>Dam &amp; Reservoir</strong>
+            <p>A dam is built across a river, creating a large reservoir that stores water at elevation — giving it gravitational potential energy.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-dot">02</div>
+          <div class="step-content">
+            <strong>Intake &amp; Penstock</strong>
+            <p>Water flows through intake gates and down a large pipe called a <em>penstock</em>, accelerating as it descends and building pressure.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-dot">03</div>
+          <div class="step-content">
+            <strong>Turbine</strong>
+            <p>High-velocity water strikes the blades of a turbine, causing it to spin rapidly. The greater the <em>head</em> (height) and flow volume, the more force is generated.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-dot">04</div>
+          <div class="step-content">
+            <strong>Generator</strong>
+            <p>The spinning turbine drives a generator — its rotation within a magnetic field induces an electrical current through electromagnetic induction.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-dot">05</div>
+          <div class="step-content">
+            <strong>Transmission</strong>
+            <p>A transformer steps up the voltage and the electricity travels through power lines to homes, factories, and cities.</p>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="info-card">
-    <h2>✦ About Coconut Gold ✦</h2>
-    <p>
-      Where the tropics meet the luxury of gold — a land of endless sun,
-      crystalline shores, and coconuts dripping with liquid amber.
-      Every sip, every beat, every grain of sand is pure gold.
-    </p>
+  <!-- Q2 -->
+  <div class="section" data-delay="100">
+    <div class="section-header">
+      <div class="section-num">02 ——</div>
+      <div class="section-title">What are the environmental impacts of building dams? <em>(3 examples)</em></div>
+    </div>
+    <div class="section-body">
+      <div class="cards">
+        <div class="card">
+          <div class="card-num">IMPACT 01</div>
+          <h3>Disruption of Aquatic Ecosystems</h3>
+          <p>Dams act as walls in river systems, <strong>blocking fish migration routes</strong> such as salmon and disrupting breeding cycles. They also alter water temperature, oxygen levels, and flow patterns, threatening biodiversity for both aquatic and riparian species.</p>
+        </div>
+        <div class="card">
+          <div class="card-num">IMPACT 02</div>
+          <h3>Habitat Flooding &amp; Deforestation</h3>
+          <p>The reservoir created upstream permanently floods <strong>forests, farmland, and wildlife habitats</strong>. This destroys ecosystems that took millennia to form and displaces both wildlife and human communities who have lived there for generations.</p>
+        </div>
+        <div class="card">
+          <div class="card-num">IMPACT 03</div>
+          <h3>Altered Sediment Flow</h3>
+          <p>Dams trap the <strong>sediment and nutrients</strong> that would naturally flow downstream, leading to riverbed erosion, depleted soil fertility in floodplains, and the degradation of river deltas — impacting agriculture and coastal communities far from the dam itself.</p>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="ornament">⬡ ⬡ ⬡</div>
-</div>
+  <!-- Q3 -->
+  <div class="section" data-delay="150">
+    <div class="section-header">
+      <div class="section-num">03 ——</div>
+      <div class="section-title">Can hydroelectric power be used in small-scale applications? <em>Why?</em></div>
+    </div>
+    <div class="section-body">
+      <div class="answer-box">
+        <div class="answer-badge">✓ YES — ABSOLUTELY</div>
+        <p class="answer-body">Small-scale hydroelectric systems — known as <strong style="color:var(--aqua)">micro-hydro</strong> (under 100 kW) or <strong style="color:var(--aqua)">pico-hydro</strong> (under 5 kW) — are highly effective for rural and off-grid communities. No large dam is needed; a small stream with adequate flow and elevation drop is sufficient.</p>
+        <div class="reason-list">
+          <div class="reason">
+            <div class="reason-icon">⚡</div>
+            <div class="reason-text">
+              <strong>Consistent, 24/7 Power</strong>
+              <p>Unlike solar or wind, flowing water is continuous and reliable — generating electricity day and night, in any weather.</p>
+            </div>
+          </div>
+          <div class="reason">
+            <div class="reason-icon">🏔</div>
+            <div class="reason-text">
+              <strong>Minimal Infrastructure Required</strong>
+              <p>A modest stream with a sufficient gradient is all that's needed — no mega-dam, no massive reservoir, no displaced communities.</p>
+            </div>
+          </div>
+          <div class="reason">
+            <div class="reason-icon">💧</div>
+            <div class="reason-text">
+              <strong>Cost-Effective Long-Term</strong>
+              <p>Once installed, operating costs are very low. This makes micro-hydro ideal for remote villages in mountainous regions — including much of Vietnam and Southeast Asia — that lack grid access.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<!-- Secret Button -->
-<div class="secret-zone" id="secretZone">
-  <button class="secret-btn" id="secretBtn" onclick="triggerSecret()" title="">🌴</button>
-  <span class="secret-hint">psst… click me…</span>
-</div>
+  <!-- Q4 -->
+  <div class="section" data-delay="200">
+    <div class="section-header">
+      <div class="section-num">04 ——</div>
+      <div class="section-title">What are the challenges associated with hydroelectric? <em>(3 examples)</em></div>
+    </div>
+    <div class="section-body">
+      <div class="cards">
+        <div class="card">
+          <div class="card-num">CHALLENGE 01</div>
+          <h3>High Upfront Construction Costs</h3>
+          <p>Building dams and their supporting infrastructure requires <strong>massive capital investment</strong> — often billions of dollars. This makes large hydroelectric projects financially out of reach for many developing nations without international financing.</p>
+        </div>
+        <div class="card">
+          <div class="card-num">CHALLENGE 02</div>
+          <h3>Vulnerability to Climate Change &amp; Drought</h3>
+          <p>Hydroelectric output depends entirely on water availability. <strong>Prolonged droughts</strong> — made more frequent by climate change — can dramatically reduce or even halt power generation, creating energy insecurity in regions that rely heavily on it.</p>
+        </div>
+        <div class="card">
+          <div class="card-num">CHALLENGE 03</div>
+          <h3>Forced Social Displacement</h3>
+          <p>Large dam projects routinely displace communities from their ancestral lands. China's Three Gorges Dam famously <strong>relocated over one million people</strong>, causing profound social, cultural, and psychological disruption that continues today.</p>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<!-- Toast -->
-<div class="toast" id="toast"></div>
+  <div class="footer">HYDROELECTRIC ENERGY · RENEWABLE POWER SERIES</div>
+
+</div>
 
 <script>
-  // ── Floating particles ──
-  const canvas = document.getElementById('bgCanvas');
-  for (let i = 0; i < 35; i++) {
-    const p = document.createElement('div');
-    p.className = 'particle';
-    const size = Math.random() * 6 + 2;
-    p.style.cssText = `
-      width:${size}px; height:${size}px;
-      left:${Math.random()*100}%;
-      animation-duration:${6 + Math.random()*12}s;
-      animation-delay:${Math.random()*12}s;
-      opacity:${Math.random()*0.5+0.2};
-    `;
-    canvas.appendChild(p);
-  }
+  // Scroll-triggered section reveals
+  const sections = document.querySelectorAll('.section');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const delay = entry.target.dataset.delay || 0;
+        setTimeout(() => entry.target.classList.add('visible'), parseInt(delay));
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08 });
+  sections.forEach(s => observer.observe(s));
 
-  // ── Toast helper ──
-  function showToast(msg, duration=2800) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    clearTimeout(t._timer);
-    t._timer = setTimeout(() => t.classList.remove('show'), duration);
-  }
-
-  // ── Button actions ──
-  function playCoconutSong() {
-    showToast('🎵 Taking you to the COCONUT SONG! 🥥');
-    setTimeout(() => {
-      window.open('https://www.youtube.com/watch?v=6eSid-8WNwY', '_blank');
-    }, 900);
-  }
-
-  function crackCoconut() {
-    showToast('💥 CRACK! Golden coconut water everywhere! 🥥✨');
-    burst(6);
-  }
-
-  function sipDrink() {
-    showToast('🍹 Mmm… tropical gold in every sip…');
-    burst(4);
-  }
-
-  function goldenShower() {
-    showToast('✨ Golden rain descends upon you! ☀️');
-    burst(20);
-  }
-
-  function danceTropics() {
-    const emojis = ['💃','🕺','🌴','🥥','🎶','✨'];
-    showToast(emojis.join(' ') + ' DANCE! ' + emojis.reverse().join(' '));
-    document.querySelector('.emblem').style.animation = 'spin 0.3s linear infinite';
-    setTimeout(() => {
-      document.querySelector('.emblem').style.animation = 'pulse 3s ease-in-out infinite';
-    }, 3000);
-  }
-
-  function findTreasure() {
-    showToast('🏴‍☠️ X marks the spot… the treasure is COCONUT GOLD! 💛');
-    burst(10);
-  }
-
-  // ── Burst effect ──
-  function burst(count) {
-    for (let i = 0; i < count; i++) {
-      const el = document.createElement('div');
-      el.textContent = ['🥥','✨','💛','🌴','⭐'][Math.floor(Math.random()*5)];
-      el.style.cssText = `
-        position:fixed; font-size:${1.5+Math.random()*1.5}rem;
-        left:${20+Math.random()*60}%; top:${20+Math.random()*40}%;
-        pointer-events:none; z-index:999;
-        animation: burstAnim 1.4s ease-out forwards;
-        animation-delay:${Math.random()*0.4}s;
-      `;
-      document.body.appendChild(el);
-      setTimeout(() => el.remove(), 2000);
-    }
-  }
-  const burstStyle = document.createElement('style');
-  burstStyle.textContent = `
-    @keyframes burstAnim {
-      0%   { opacity:1; transform: translate(0,0) scale(1); }
-      100% { opacity:0; transform: translate(${['-','+'][Math.round(Math.random())]}${50+Math.random()*80}px, -${80+Math.random()*120}px) scale(0.3) rotate(${Math.random()*360}deg); }
-    }
-  `;
-  document.head.appendChild(burstStyle);
-
-  // ── Secret button reveal on hover zone ──
-  const secretBtn = document.getElementById('secretBtn');
-  // Make it slightly visible after 5 seconds so users can find it
-  setTimeout(() => secretBtn.classList.add('revealed'), 5000);
-  setTimeout(() => secretBtn.classList.remove('revealed'), 7500);
-
-  function triggerSecret() {
-    showToast('🌴 YOU FOUND THE SECRET! 🥥👑 Sending you to the COCONUT SONG!', 3500);
-    burst(18);
-    // Gold flash
-    const flash = document.createElement('div');
-    flash.style.cssText = `
-      position:fixed; inset:0; background:rgba(255,215,0,0.18);
-      pointer-events:none; z-index:998;
-      animation: flashFade 1s ease-out forwards;
-    `;
-    document.body.appendChild(flash);
-    const fs = document.createElement('style');
-    fs.textContent = `@keyframes flashFade { 0%{opacity:1} 100%{opacity:0} }`;
-    document.head.appendChild(fs);
-    setTimeout(() => flash.remove(), 1200);
-
-    setTimeout(() => {
-      window.open('https://www.youtube.com/watch?v=6eSid-8WNwY', '_blank');
-    }, 1500);
-  }
+  // Mouse ripple on cards
+  document.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const rect = card.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      card.style.setProperty('--mx', x + '%');
+      card.style.setProperty('--my', y + '%');
+    });
+  });
 </script>
 </body>
 </html>
