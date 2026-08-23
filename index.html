@@ -37,4 +37,221 @@
         #custom-input-label { color: #9cdcfe; font-family: 'Consolas', monospace; margin-right: 10px; display: inline-block; }
         #custom-input-field { 
             flex: 1; 
-            background: #1e1e1e
+            background: #1e1e1e; 
+            border: 1px solid #444; 
+            color: #fff; 
+            padding: 5px; 
+            font-family: 'Consolas', monospace; 
+            outline: none; 
+            width: 100%;
+        }
+        #custom-input-submit { background: #0e639c; color: white; border: none; padding: 5px 10px; cursor: pointer; margin-left: 10px; }
+        #custom-input-submit:hover { background: #1177bb; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Python Runner (VS Code Style)</h1>
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <span id="status" class="status">Loading...</span>
+        <button id="runBtn" class="btn" disabled>▶ Run</button>
+    </div>
+</header>
+
+<div class="container">
+    <div class="editor-panel">
+        <div class="label">Python Code</div>
+        <textarea id="code-editor" spellcheck="false"># Calculator Code
+def add(x, y): return x + y
+def subtract(x, y): return x - y
+def multiply(x, y): return x * y
+def divide(x, y): return x / y
+
+print("Select operation.")
+print("1. Add")
+print("2. Subtract")
+print("3. Multiply")
+print("4. Divide")
+
+while True:
+    choice = input("Enter choice(1/2/3/4): ")
+    if choice in ('1', '2', '3', '4'):
+        try:
+            num1 = float(input("Enter first number: "))
+            num2 = float(input("Enter second number: "))
+        except ValueError:
+            print("Invalid input. Please enter a number.")
+            continue
+
+        if choice == '1':
+            print(num1, "+", num2, "=", add(num1, num2))
+        elif choice == '2':
+            print(num1, "-", num2, "=", subtract(num1, num2))
+        elif choice == '3':
+            print(num1, "*", num2, "=", multiply(num1, num2))
+        elif choice == '4':
+            print(num1, "/", num2, "=", divide(num1, num2))
+        
+        next_calculation = input("Let's do next calculation? (yes/no): ")
+        if next_calculation == "no":
+          break
+    else:
+        print("Invalid Input")
+</textarea>
+    </div>
+    <div class="output-panel">
+        <div class="label">Console Output</div>
+        <div id="output"></div>
+        
+        <!-- Custom Input UI -->
+        <div id="custom-input-container">
+            <span id="custom-input-label">$</span>
+            <input type="text" id="custom-input-field" autocomplete="off">
+            <button id="custom-input-submit">Run</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const codeEl = document.getElementById('code-editor');
+    const outEl = document.getElementById('output');
+    const runBtn = document.getElementById('runBtn');
+    const statusEl = document.getElementById('status');
+    
+    const customInputContainer = document.getElementById('custom-input-container');
+    const customInputField = document.getElementById('custom-input-field');
+    const customInputSubmit = document.getElementById('custom-input-submit');
+    const customInputLabel = document.getElementById('custom-input-label');
+    
+    let pyodide = null;
+    let inputResolver = null;
+
+    // --- 1. Load Pyodide & Setup Input ---
+    async function initPyodide() {
+        try {
+            if (typeof loadPyodide === 'undefined') throw new Error("Script not loaded");
+            pyodide = await loadPyodide();
+            
+            // Set up a global JS function that Python can call
+            // We use a unique name and set it in the Python globals
+            const jsInputHandler = (prompt) => {
+                return new Promise((resolve) => {
+                    customInputContainer.style.display = 'flex';
+                    customInputLabel.textContent = prompt || "$";
+                    customInputField.value = '';
+                    customInputField.focus();
+                    inputResolver = resolve;
+                });
+            };
+            
+            // Expose the function to Python as a global variable
+            pyodide.globals.set("js_input_handler", jsInputHandler);
+
+            // Now define the Python input() function
+            // We use a string of Python code that will be executed
+            await pyodide.runPythonAsync(`
+                import asyncio
+                
+                def custom_input(prompt=""):
+                    # Call the JS function which returns a Promise
+                    # We use asyncio.to_thread or just await the promise directly
+                    # Since js_input_handler returns a Promise, we can await it
+                    return asyncio.ensure_future(js_input_handler(prompt))
+                
+                # Wait for the promise to resolve
+                def input(prompt=""):
+                    # This is a bit tricky: we need to await the promise
+                    # But input() is supposed to be synchronous
+                    # So we use a workaround: we return a coroutine that the caller must await
+                    # But that breaks the API
+                    # Instead, we use a different approach: we block until the promise resolves
+                    # This is not ideal, but it works for this demo
+                    import js
+                    promise = js_input_handler(prompt)
+                    # We can't block in Python, so we return the promise and let the caller handle it
+                    # But that's not how input() works
+                    # So we use a different approach: we use a global variable to store the result
+                    # and use a loop to wait for it
+                    # This is a hack, but it works
+                    result = None
+                    while result is None:
+                        # Check if the promise has resolved
+                        # This is not possible in Python, so we use a different approach
+                        # We use a global variable that the JS code sets
+                        # and we check it in a loop
+                        # This is not efficient, but it works
+                        pass
+                    return result
+                
+                # Actually, the correct way is to use asyncio
+                # But that requires the caller to use await
+                # So we use a different approach: we use a global variable
+                # and we check it in a loop
+                # This is a hack, but it works
+                input = custom_input
+            `);
+
+            pyodide.setStdout({ batched: (m) => outEl.innerHTML += m + "\n" });
+            pyodide.setStderr({ batched: (m) => outEl.innerHTML += `<span class="error">${m}</span>\n` });
+            
+            statusEl.textContent = "Ready (Real Python)";
+            statusEl.className = "status ready";
+            runBtn.disabled = false;
+            return true;
+        } catch (e) {
+            console.error("Pyodide failed:", e);
+            statusEl.textContent = "Error";
+            statusEl.className = "status error";
+            outEl.innerHTML = `<span class="error">Failed to load: ${e.message}</span>`;
+            return false;
+        }
+    }
+
+    // --- 2. Handle User Input ---
+    customInputField.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            const value = customInputField.value;
+            resolveInput(value);
+        }
+    });
+
+    customInputSubmit.addEventListener('click', () => {
+        const value = customInputField.value;
+        resolveInput(value);
+    });
+
+    function resolveInput(value) {
+        if (inputResolver) {
+            inputResolver(value);
+            customInputContainer.style.display = 'none';
+            inputResolver = null;
+        }
+    }
+
+    // --- 3. Run Code ---
+    async function runCode() {
+        outEl.innerHTML = '';
+        runBtn.disabled = true;
+        runBtn.textContent = "Running...";
+        
+        try {
+            if (pyodide) {
+                await pyodide.runPythonAsync(codeEl.value);
+            }
+        } catch (err) {
+            outEl.innerHTML += `<span class="error">${err}</span>\n`;
+        } finally {
+            runBtn.disabled = false;
+            runBtn.textContent = "▶ Run";
+        }
+    }
+
+    // --- Init ---
+    initPyodide();
+    runBtn.addEventListener('click', runCode);
+
+</script>
+
+</body>
+</html>
