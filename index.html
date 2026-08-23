@@ -145,8 +145,10 @@
             <button id="projects-btn" class="icon-btn" title="Saved projects">📁 Projects</button>
             <button id="save-btn" class="icon-btn" title="Save now">💾 Save</button>
             <span id="last-saved" class="status" style="display:none;"></span>
+            <span id="persistence-status" class="status" style="display:none;"></span>
             <button id="export-btn" class="icon-btn" title="Export as .py file">⬇ .py</button>
             <span id="offline-status" class="status" style="display:none;">Offline ready</span>
+            <span id="storage-mode-status" class="status" style="display:none;" title="Progress and projects will still work, but won't be remembered after you close or reload this page.">Session only</span>
             <input type="color" id="accent-picker" title="Accent color" value="#007bff">
             <button id="theme-toggle" class="icon-btn" title="Toggle light/dark theme">🌙</button>
             <span id="save-status" class="status" style="display:none;">Saved</span>
@@ -197,6 +199,7 @@
     const minimizeBtn = document.getElementById('minimize-toggle');
     const saveBtn = document.getElementById('save-btn');
     const lastSavedEl = document.getElementById('last-saved');
+    const persistenceStatusEl = document.getElementById('persistence-status');
     const exportBtn = document.getElementById('export-btn');
 
     const projectsBtn = document.getElementById('projects-btn');
@@ -234,7 +237,71 @@
     const PROJECTS_INDEX_KEY = 'pybiz:projects';
     const ACTIVE_PROJECT_KEY = 'pybiz:active-project';
     const projectCodeKey = (id) => 'pybiz:project:' + id;
-    const hasStorage = typeof window !== 'undefined' && !!window.storage;
+    // Prefer Claude's real persistent storage when it's available (inside
+    // claude.ai). If it's not - e.g. the file was downloaded and opened
+    // directly in a browser - fall back to a simple in-memory store so the
+    // app still works fully for the current tab; it just won't remember
+    // anything after the page is closed or reloaded.
+    function createMemoryStorage() {
+        const store = new Map();
+        return {
+            async get(key) {
+                if (!store.has(key)) throw new Error('Key not found: ' + key);
+                return { key, value: store.get(key), shared: false };
+            },
+            async set(key, value) {
+                store.set(key, value);
+                return { key, value, shared: false };
+            },
+            async delete(key) {
+                const existed = store.has(key);
+                store.delete(key);
+                return { key, deleted: existed, shared: false };
+            },
+            async list(prefix) {
+                const keys = [...store.keys()].filter(k => !prefix || k.startsWith(prefix));
+                return { keys, prefix, shared: false };
+            }
+        };
+    }
+
+    // Prefer Claude's real persistent storage when it's available (inside
+    // claude.ai). The host sometimes attaches window.storage a moment
+    // *after* this script starts, so checking once synchronously can lose
+    // that race and wrongly conclude it's unavailable. Instead we poll for
+    // it briefly before falling back. If it never shows up (e.g. the file
+    // was downloaded and opened directly in a browser), we fall back to a
+    // simple in-memory store so the app still works for the current tab -
+    // it just won't remember anything after the page is closed or reloaded.
+    let storageApi = createMemoryStorage();
+    let persistentStorageAvailable = false;
+
+    async function resolveStorage(timeoutMs = 2500, intervalMs = 100) {
+        const start = Date.now();
+        while (Date.now() - start < timeoutMs) {
+            if (typeof window !== 'undefined' && window.storage) {
+                storageApi = window.storage;
+                persistentStorageAvailable = true;
+                return true;
+            }
+            await new Promise((r) => setTimeout(r, intervalMs));
+        }
+        persistentStorageAvailable = false;
+        return false;
+    }
+
+    function updatePersistenceBadge() {
+        if (!persistenceStatusEl) return;
+        if (persistentStorageAvailable) {
+            persistenceStatusEl.style.display = 'none';
+        } else {
+            persistenceStatusEl.textContent = "Session only \u2014 won't survive a reload";
+            persistenceStatusEl.className = 'status error';
+            persistenceStatusEl.style.display = 'inline-block';
+        }
+    }
+
+    const hasStorage = true; // storageApi always works now (real or in-memory)
 
     let projects = [];          // [{ id, name, updatedAt }]
     let activeProjectId = null;
@@ -268,7 +335,7 @@
     async function saveProjectIndex() {
         if (!hasStorage) return;
         try {
-            await window.storage.set(PROJECTS_INDEX_KEY, JSON.stringify(projects), false);
+            await storageApi.set(PROJECTS_INDEX_KEY, JSON.stringify(projects), false);
         } catch (e) {
             console.error('Project index save failed:', e);
         }
@@ -277,19 +344,15 @@
     async function setActiveProjectId(id) {
         activeProjectId = id;
         if (!hasStorage) return;
-        try { await window.storage.set(ACTIVE_PROJECT_KEY, id, false); } catch (e) { /* ignore */ }
+        try { await storageApi.set(ACTIVE_PROJECT_KEY, id, false); } catch (e) { /* ignore */ }
     }
 
     // Saves the editor's current contents into whichever project is active.
     async function saveProgress() {
-        if (!hasStorage) {
-            showLastSaved('Storage unavailable', true);
-            return;
-        }
         if (!activeProjectId) return;
         try {
             const savedAt = new Date();
-            await window.storage.set(projectCodeKey(activeProjectId), JSON.stringify({ code: codeEl.value }), false);
+            await storageApi.set(projectCodeKey(activeProjectId), JSON.stringify({ code: codeEl.value }), false);
             const proj = projects.find(p => p.id === activeProjectId);
             if (proj) {
                 proj.updatedAt = savedAt.toISOString();
@@ -308,7 +371,7 @@
     async function loadActiveProjectCode() {
         if (!hasStorage || !activeProjectId) return;
         try {
-            const result = await window.storage.get(projectCodeKey(activeProjectId), false);
+            const result = await storageApi.get(projectCodeKey(activeProjectId), false);
             let code = '';
             if (result && typeof result.value === 'string') {
                 try {
@@ -335,7 +398,7 @@
             return;
         }
         try {
-            const res = await window.storage.get(PROJECTS_INDEX_KEY, false);
+            const res = await storageApi.get(PROJECTS_INDEX_KEY, false);
             if (res && typeof res.value === 'string') {
                 const parsed = JSON.parse(res.value);
                 if (Array.isArray(parsed)) projects = parsed;
@@ -345,7 +408,7 @@
         if (projects.length === 0) {
             let legacyCode = '';
             try {
-                const legacy = await window.storage.get(LEGACY_CODE_KEY, false);
+                const legacy = await storageApi.get(LEGACY_CODE_KEY, false);
                 if (legacy && typeof legacy.value === 'string') {
                     try {
                         const parsed = JSON.parse(legacy.value);
@@ -359,11 +422,11 @@
             const id = genId();
             projects = [{ id, name: 'My Project', updatedAt: new Date().toISOString() }];
             await saveProjectIndex();
-            await window.storage.set(projectCodeKey(id), JSON.stringify({ code: legacyCode }), false);
+            await storageApi.set(projectCodeKey(id), JSON.stringify({ code: legacyCode }), false);
             await setActiveProjectId(id);
         } else {
             try {
-                const res = await window.storage.get(ACTIVE_PROJECT_KEY, false);
+                const res = await storageApi.get(ACTIVE_PROJECT_KEY, false);
                 activeProjectId = (res && typeof res.value === 'string') ? res.value : null;
             } catch (e) {
                 activeProjectId = null;
@@ -389,7 +452,7 @@
         projects.push({ id, name, updatedAt: new Date().toISOString() });
         await saveProjectIndex();
         if (hasStorage) {
-            try { await window.storage.set(projectCodeKey(id), JSON.stringify({ code: '' }), false); } catch (e) {}
+            try { await storageApi.set(projectCodeKey(id), JSON.stringify({ code: '' }), false); } catch (e) {}
         }
         await setActiveProjectId(id);
         codeEl.value = '';
@@ -415,7 +478,7 @@
         if (!confirm(`Delete project "${proj.name}"? This can't be undone.`)) return;
 
         if (hasStorage) {
-            try { await window.storage.delete(projectCodeKey(id), false); } catch (e) { /* already gone */ }
+            try { await storageApi.delete(projectCodeKey(id), false); } catch (e) { /* already gone */ }
         }
         projects = projects.filter(p => p.id !== id);
         await saveProjectIndex();
@@ -426,7 +489,7 @@
                 projects = [{ id: newId, name: 'My Project', updatedAt: new Date().toISOString() }];
                 await saveProjectIndex();
                 if (hasStorage) {
-                    try { await window.storage.set(projectCodeKey(newId), JSON.stringify({ code: '' }), false); } catch (e) {}
+                    try { await storageApi.set(projectCodeKey(newId), JSON.stringify({ code: '' }), false); } catch (e) {}
                 }
                 await setActiveProjectId(newId);
             } else {
@@ -516,7 +579,7 @@
         if (hasStorage && activeProjectId) {
             clearTimeout(saveTimer);
             // Fire-and-forget; beforeunload can't reliably await.
-            window.storage.set(projectCodeKey(activeProjectId), JSON.stringify({ code: codeEl.value }), false).catch(() => {});
+            storageApi.set(projectCodeKey(activeProjectId), JSON.stringify({ code: codeEl.value }), false).catch(() => {});
         }
     });
 
@@ -554,7 +617,7 @@
         clearTimeout(settingsSaveTimer);
         settingsSaveTimer = setTimeout(async () => {
             try {
-                await window.storage.set(
+                await storageApi.set(
                     SETTINGS_STORAGE_KEY,
                     JSON.stringify({ theme: currentTheme, accent: currentAccent, collapsed: headerCollapsed }),
                     false
@@ -575,7 +638,7 @@
 
         if (!hasStorage) return;
         try {
-            const result = await window.storage.get(SETTINGS_STORAGE_KEY, false);
+            const result = await storageApi.get(SETTINGS_STORAGE_KEY, false);
             if (result && typeof result.value === 'string') {
                 const parsed = JSON.parse(result.value);
                 if (parsed && typeof parsed === 'object') {
@@ -829,7 +892,12 @@ async def __run_user_code__(source):
 
     // --- Init ---
     setupOfflineCache();
-    Promise.all([loadSettings(), initProjects()]).finally(initPyodide);
+    (async () => {
+        await resolveStorage();
+        updatePersistenceBadge();
+        await Promise.all([loadSettings(), initProjects()]);
+        initPyodide();
+    })();
     runBtn.addEventListener('click', runCode);
 
 </script>
