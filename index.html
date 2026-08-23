@@ -11,37 +11,39 @@
         h1 { margin: 0; font-size: 1.1rem; color: #fff; }
         .status { font-size: 0.8rem; padding: 4px 8px; border-radius: 4px; background: #333; color: #aaa; }
         .status.ready { background: #2d5632; color: #fff; }
+        .status.error { background: #5c2323; color: #fff; }
         .btn { background: var(--accent); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
         .btn:disabled { background: #444; cursor: not-allowed; }
-        .container { display: flex; flex: 1; }
+        .container { display: flex; flex: 1; min-height: 0; }
         .editor-panel { flex: 1; display: flex; flex-direction: column; border-right: 1px solid #333; }
-        .output-panel { flex: 1; display: flex; flex-direction: column; background: var(--out); position: relative; }
+        .output-panel { flex: 1; display: flex; flex-direction: column; background: var(--out); position: relative; min-height: 0; }
         .label { background: #2d2d2d; padding: 8px; font-size: 0.8rem; font-weight: bold; color: #999; text-transform: uppercase; border-bottom: 1px solid #333; }
         textarea#code-editor { flex: 1; border: none; padding: 15px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.95rem; background: var(--editor); color: #d4d4d4; resize: none; outline: none; line-height: 1.5; }
-        #output { flex: 1; padding: 15px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.95rem; overflow-y: auto; color: #d4d4d4; white-space: pre-wrap; }
+        #output { flex: 1; padding: 15px; padding-bottom: 50px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.95rem; overflow-y: auto; color: #d4d4d4; white-space: pre-wrap; word-break: break-word; }
         .error { color: #f48771; }
-        
+
         /* Fast Input UI */
-        #input-bar { 
-            display: none; 
-            position: absolute; 
-            bottom: 0; 
-            left: 0; 
-            right: 0; 
-            background: #252526; 
-            padding: 10px 15px; 
-            border-top: 1px solid #444; 
+        #input-bar {
+            display: none;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #252526;
+            padding: 10px 15px;
+            border-top: 1px solid #444;
             z-index: 100;
+            align-items: center;
         }
-        #prompt-text { color: #4ec9b0; font-family: 'Consolas', monospace; margin-right: 10px; }
-        #user-input { 
-            background: transparent; 
-            border: none; 
-            color: #fff; 
-            font-family: 'Consolas', monospace; 
-            font-size: 1rem; 
-            flex: 1; 
-            outline: none; 
+        #prompt-text { color: #4ec9b0; font-family: 'Consolas', monospace; margin-right: 10px; white-space: nowrap; }
+        #user-input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-family: 'Consolas', monospace;
+            font-size: 1rem;
+            flex: 1;
+            outline: none;
         }
     </style>
 </head>
@@ -58,52 +60,16 @@
 <div class="container">
     <div class="editor-panel">
         <div class="label">Python Code</div>
-        <textarea id="code-editor" spellcheck="false"># Calculator Code
-def add(x, y): return x + y
-def subtract(x, y): return x - y
-def multiply(x, y): return x * y
-def divide(x, y): return x / y
-
-print("Select operation.")
-print("1. Add")
-print("2. Subtract")
-print("3. Multiply")
-print("4. Divide")
-
-while True:
-    choice = input("Enter choice(1/2/3/4): ")
-    if choice in ('1', '2', '3', '4'):
-        try:
-            num1 = float(input("Enter first number: "))
-            num2 = float(input("Enter second number: "))
-        except ValueError:
-            print("Invalid input. Please enter a number.")
-            continue
-
-        if choice == '1':
-            print(num1, "+", num2, "=", add(num1, num2))
-        elif choice == '2':
-            print(num1, "-", num2, "=", subtract(num1, num2))
-        elif choice == '3':
-            print(num1, "*", num2, "=", multiply(num1, num2))
-        elif choice == '4':
-            print(num1, "/", num2, "=", divide(num1, num2))
-        
-        next_calculation = input("Let's do next calculation? (yes/no): ")
-        if next_calculation == "no":
-          break
-    else:
-        print("Invalid Input")
-</textarea>
+        <textarea id="code-editor" spellcheck="false"></textarea>
     </div>
     <div class="output-panel">
         <div class="label">Console Output</div>
         <div id="output"></div>
-        
+
         <!-- Fast Input Bar -->
         <div id="input-bar">
             <span id="prompt-text">$</span>
-            <input type="text" id="user-input" autocomplete="off" autofocus>
+            <input type="text" id="user-input" autocomplete="off">
         </div>
     </div>
 </div>
@@ -113,109 +79,167 @@ while True:
     const outEl = document.getElementById('output');
     const runBtn = document.getElementById('runBtn');
     const statusEl = document.getElementById('status');
-    
+
     const inputBar = document.getElementById('input-bar');
     const promptText = document.getElementById('prompt-text');
     const userInput = document.getElementById('user-input');
-    
+
     let pyodide = null;
     let inputCallback = null; // Function to call when input is ready
     let isWaitingForInput = false;
+    let isRunning = false;
+
+    // --- Output helper (avoids innerHTML injection / broken rendering) ---
+    function appendOutput(text, isError) {
+        const span = document.createElement('span');
+        if (isError) span.className = 'error';
+        span.textContent = (text === undefined || text === null ? '' : text) + '\n';
+        outEl.appendChild(span);
+        outEl.scrollTop = outEl.scrollHeight;
+    }
+
+    function clearOutput() {
+        outEl.textContent = '';
+    }
+
+    function formatError(err) {
+        // PythonError objects stringify with a full traceback; keep only
+        // the message when possible, but fall back to the full text.
+        const text = (err && err.message) ? err.message : String(err);
+        return text;
+    }
 
     // --- 1. Load Pyodide ---
     async function initPyodide() {
         try {
-            if (typeof loadPyodide === 'undefined') throw new Error("Script not loaded");
+            if (typeof loadPyodide === 'undefined') throw new Error("Pyodide script failed to load. Check your network connection.");
             pyodide = await loadPyodide();
-            
-            // Set up stdout
-            pyodide.setStdout({ batched: (m) => outEl.innerHTML += m + "\n" });
-            pyodide.setStderr({ batched: (m) => outEl.innerHTML += `<span class="error">${m}</span>\n` });
-            
-            // Set up stdin (The Fast Way)
-            // We intercept the stdin read. If we are waiting for input, we return the value.
-            // Otherwise, we block until the user types.
-            pyodide.setStdin({
-                getChar: (blocking) => {
-                    if (!isWaitingForInput) return -1; // No input requested
-                    
-                    // This is a hack to make it work with the async nature of JS
-                    // We return a special character to signal "wait"
-                    // But Pyodide's stdin is tricky.
-                    // Better approach: Override the input() function in Python to call a JS function
-                    return -1; 
-                }
-            });
 
-            // Instead of stdin, we override input() directly in Python globals
-            // We use a simple Promise-based approach that is fast
-            pyodide.globals.set("js_request_input", (prompt) => {
+            // Redirect stdout / stderr to the console panel
+            pyodide.setStdout({ batched: (m) => appendOutput(m, false) });
+            pyodide.setStderr({ batched: (m) => appendOutput(m, true) });
+
+            // Bridge for interactive input(): a JS function that returns a
+            // Promise resolved when the user submits the input bar.
+            pyodide.globals.set("__js_request_input__", (prompt) => {
                 return new Promise((resolve) => {
                     isWaitingForInput = true;
-                    promptText.textContent = prompt || "$ ";
+                    promptText.textContent = (prompt === undefined || prompt === null || prompt === "") ? "$" : String(prompt);
                     inputBar.style.display = 'flex';
                     userInput.value = '';
                     userInput.focus();
-                    
-                    // Store the resolver
                     inputCallback = resolve;
                 });
             });
 
+            // Set up a Python-side helper that:
+            //  1. Defines an async input() replacement backed by the JS bridge.
+            //  2. Parses the user's script with `ast`, rewrites any input(...)
+            //     call into `await input(...)`, wraps the whole script body in
+            //     a single async function, and awaits it.
+            // This lets ordinary synchronous-looking scripts (like the sample
+            // calculator) use input() without blocking the browser's main
+            // thread, which is the only way to get real interactivity in
+            // Pyodide running on the main thread.
             await pyodide.runPythonAsync(`
-                def fast_input(prompt=""):
-                    # Call JS function, wait for promise, return result
-                    return js_request_input(prompt)
-                
-                input = fast_input
+import ast
+
+async def fast_input(prompt=""):
+    return await __js_request_input__(prompt)
+
+input = fast_input
+
+class _AwaitInputCalls(ast.NodeTransformer):
+    def visit_Call(self, node):
+        self.generic_visit(node)
+        if isinstance(node.func, ast.Name) and node.func.id == "input":
+            return ast.copy_location(ast.Await(value=node), node)
+        return node
+
+async def __run_user_code__(source):
+    tree = ast.parse(source, mode="exec")
+    _AwaitInputCalls().visit(tree)
+    body = tree.body if tree.body else [ast.Pass()]
+    func_node = ast.AsyncFunctionDef(
+        name="__user_main__",
+        args=ast.arguments(
+            posonlyargs=[], args=[], vararg=None,
+            kwonlyargs=[], kw_defaults=[], kwarg=None, defaults=[]
+        ),
+        body=body,
+        decorator_list=[],
+        returns=None,
+        type_comment=None,
+    )
+    module = ast.Module(body=[func_node], type_ignores=[])
+    ast.fix_missing_locations(module)
+    code_obj = compile(module, "<user_code>", "exec")
+    ns = {"input": input, "__name__": "__main__"}
+    exec(code_obj, ns)
+    await ns["__user_main__"]()
             `);
-            
-            statusEl.textContent = "Ready (Fast)";
+
+            statusEl.textContent = "Ready";
             statusEl.className = "status ready";
             runBtn.disabled = false;
             return true;
         } catch (e) {
             console.error("Init failed:", e);
             statusEl.textContent = "Error";
-            outEl.innerHTML = `<span class="error">${e.message}</span>`;
+            statusEl.className = "status error";
+            appendOutput("Failed to initialize Python runtime: " + formatError(e), true);
             return false;
         }
     }
 
     // --- 2. Handle Input ---
+    function submitInput() {
+        if (!isWaitingForInput) return;
+        const val = userInput.value;
+        inputBar.style.display = 'none';
+        isWaitingForInput = false;
+
+        // Echo the prompt + typed value into the console, like a real terminal
+        appendOutput(promptText.textContent + " " + val, false);
+
+        const resolve = inputCallback;
+        inputCallback = null;
+        userInput.value = '';
+        if (resolve) resolve(val);
+    }
+
     userInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
-            const val = userInput.value;
-            userInput.value = '';
-            inputBar.style.display = 'none';
-            isWaitingForInput = false;
-            
-            // Print the input to the console (mimic VS Code)
-            outEl.innerHTML += val + "\n";
-            
-            // Resolve the promise
-            if (inputCallback) {
-                inputCallback(val);
-                inputCallback = null;
-            }
+            e.preventDefault();
+            submitInput();
         }
     });
 
     // --- 3. Run Code ---
     async function runCode() {
-        outEl.innerHTML = '';
+        if (isRunning || !pyodide) return;
+        isRunning = true;
+
+        clearOutput();
+        inputBar.style.display = 'none';
+        isWaitingForInput = false;
+        inputCallback = null;
+
         runBtn.disabled = true;
         runBtn.textContent = "Running...";
-        
+
         try {
-            if (pyodide) {
-                await pyodide.runPythonAsync(codeEl.value);
-            }
+            pyodide.globals.set("__user_source__", codeEl.value);
+            await pyodide.runPythonAsync("await __run_user_code__(__user_source__)");
         } catch (err) {
-            outEl.innerHTML += `<span class="error">${err}</span>\n`;
+            appendOutput(formatError(err), true);
         } finally {
             runBtn.disabled = false;
             runBtn.textContent = "▶ Run";
+            inputBar.style.display = 'none';
+            isWaitingForInput = false;
+            inputCallback = null;
+            isRunning = false;
         }
     }
 
