@@ -53,7 +53,11 @@
 
         * { box-sizing: border-box; }
         body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background: var(--bg); color: var(--text); transition: background 0.15s ease, color 0.15s ease; }
-        header { background: var(--header-bg); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+        header { background: var(--header-bg); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); transition: padding 0.15s ease; }
+        header.collapsed { padding: 6px 20px; }
+        header.collapsed .collapsible { display: none !important; }
+        #minimize-toggle { font-size: 0.8rem; padding: 5px 10px; }
+        #save-btn { white-space: nowrap; }
         h1 { margin: 0; font-size: 1.1rem; color: var(--text-strong); }
         .status { font-size: 0.8rem; padding: 4px 8px; border-radius: 4px; background: var(--status-bg); color: var(--status-text); }
         .status.ready { background: var(--status-ready-bg); color: var(--text-strong); }
@@ -98,14 +102,20 @@
 </head>
 <body>
 
-<header>
-    <h1>PyBiz <span style="font-weight:400; color: var(--text-muted); font-size: 0.85rem;">Full Python Runner</span></h1>
+<header id="app-header">
     <div style="display: flex; gap: 10px; align-items: center;">
-        <span id="offline-status" class="status" style="display:none;">Offline ready</span>
-        <input type="color" id="accent-picker" title="Accent color" value="#007bff">
-        <button id="theme-toggle" class="icon-btn" title="Toggle light/dark theme">🌙</button>
-        <span id="save-status" class="status" style="display:none;">Saved</span>
-        <span id="status" class="status">Loading...</span>
+        <button id="minimize-toggle" class="icon-btn" title="Hide toolbar">⌃</button>
+        <h1 class="collapsible">PyBiz <span style="font-weight:400; color: var(--text-muted); font-size: 0.85rem;">Full Python Runner</span></h1>
+    </div>
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <div class="collapsible" style="display: flex; gap: 10px; align-items: center;">
+            <button id="save-btn" class="icon-btn" title="Save now">💾 Save</button>
+            <span id="offline-status" class="status" style="display:none;">Offline ready</span>
+            <input type="color" id="accent-picker" title="Accent color" value="#007bff">
+            <button id="theme-toggle" class="icon-btn" title="Toggle light/dark theme">🌙</button>
+            <span id="save-status" class="status" style="display:none;">Saved</span>
+            <span id="status" class="status">Loading...</span>
+        </div>
         <button id="runBtn" class="btn" disabled>▶ Run</button>
     </div>
 </header>
@@ -139,6 +149,9 @@
     const userInput = document.getElementById('user-input');
     const themeToggleBtn = document.getElementById('theme-toggle');
     const accentPicker = document.getElementById('accent-picker');
+    const headerEl = document.getElementById('app-header');
+    const minimizeBtn = document.getElementById('minimize-toggle');
+    const saveBtn = document.getElementById('save-btn');
 
     let pyodide = null;
     let inputCallback = null; // Function to call when input is ready
@@ -224,6 +237,7 @@
     const DEFAULT_ACCENT = '#007bff';
     let currentTheme = 'dark';
     let currentAccent = DEFAULT_ACCENT;
+    let headerCollapsed = false;
     let settingsSaveTimer = null;
 
     function applyTheme(theme) {
@@ -240,6 +254,13 @@
         accentPicker.value = color;
     }
 
+    function applyHeaderCollapsed(collapsed) {
+        headerCollapsed = !!collapsed;
+        headerEl.classList.toggle('collapsed', headerCollapsed);
+        minimizeBtn.textContent = headerCollapsed ? '⌄' : '⌃';
+        minimizeBtn.title = headerCollapsed ? 'Show toolbar' : 'Hide toolbar';
+    }
+
     function scheduleSettingsSave() {
         if (!hasStorage) return;
         clearTimeout(settingsSaveTimer);
@@ -247,7 +268,7 @@
             try {
                 await window.storage.set(
                     SETTINGS_STORAGE_KEY,
-                    JSON.stringify({ theme: currentTheme, accent: currentAccent }),
+                    JSON.stringify({ theme: currentTheme, accent: currentAccent, collapsed: headerCollapsed }),
                     false
                 );
             } catch (e) {
@@ -262,6 +283,7 @@
             window.matchMedia('(prefers-color-scheme: light)').matches;
         applyTheme(prefersLight ? 'light' : 'dark');
         applyAccent(DEFAULT_ACCENT);
+        applyHeaderCollapsed(false);
 
         if (!hasStorage) return;
         try {
@@ -271,6 +293,7 @@
                 if (parsed && typeof parsed === 'object') {
                     if (parsed.theme) applyTheme(parsed.theme);
                     if (parsed.accent) applyAccent(parsed.accent);
+                    applyHeaderCollapsed(!!parsed.collapsed);
                 }
             }
         } catch (e) {
@@ -285,6 +308,20 @@
 
     accentPicker.addEventListener('input', () => {
         applyAccent(accentPicker.value);
+        scheduleSettingsSave();
+    });
+
+    // One button to minimize (hide) or reopen the top toolbar, freeing up
+    // space for the editor/output. Run stays reachable either way.
+    minimizeBtn.addEventListener('click', () => {
+        applyHeaderCollapsed(!headerCollapsed);
+        scheduleSettingsSave();
+    });
+
+    // Manual "save now" button, in addition to the automatic autosave.
+    saveBtn.addEventListener('click', () => {
+        clearTimeout(saveTimer);
+        saveProgress();
         scheduleSettingsSave();
     });
 
