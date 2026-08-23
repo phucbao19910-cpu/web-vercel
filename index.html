@@ -11,7 +11,7 @@
         h1 { margin: 0; font-size: 1.1rem; color: #fff; }
         .status { font-size: 0.8rem; padding: 4px 8px; border-radius: 4px; background: #333; color: #aaa; }
         .status.ready { background: #2d5632; color: #fff; }
-        .status.sim { background: #5a4a00; color: #fff; }
+        .status.error { background: #5a0000; color: #ff6b6b; }
         .btn { background: var(--accent); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
         .btn:disabled { background: #444; cursor: not-allowed; }
         .container { display: flex; flex: 1; }
@@ -62,31 +62,13 @@
 <div class="container">
     <div class="editor-panel">
         <div class="label">Python Code</div>
-        <textarea id="code-editor" spellcheck="false">import math
-import random
+        <textarea id="code-editor" spellcheck="false"># Calculator Code
+def add(x, y): return x + y
+def subtract(x, y): return x - y
+def multiply(x, y): return x * y
+def divide(x, y): return x / y
 
-# --- Part 1: Personal Greeting ---
-name = input("What is your name? ")
-age = int(input("How old are you? "))
-
-print(f"Hello {name}!")
-print(f"Next year you will be {age + 1}.")
-
-# --- Part 2: Calculator Functions ---
-def add(x, y):
-    return x + y
-
-def subtract(x, y):
-    return x - y
-
-def multiply(x, y):
-    return x * y
-
-def divide(x, y):
-    return x / y
-
-# --- Part 3: Calculator Loop ---
-print("\nSelect operation.")
+print("Select operation.")
 print("1. Add")
 print("2. Subtract")
 print("3. Multiply")
@@ -94,7 +76,6 @@ print("4. Divide")
 
 while True:
     choice = input("Enter choice(1/2/3/4): ")
-
     if choice in ('1', '2', '3', '4'):
         try:
             num1 = float(input("Enter first number: "))
@@ -117,9 +98,6 @@ while True:
           break
     else:
         print("Invalid Input")
-
-print(f"Square root of 16: {math.sqrt(16)}")
-print(f"Random number: {random.randint(1, 100)}")
 </textarea>
     </div>
     <div class="output-panel">
@@ -141,45 +119,40 @@ print(f"Random number: {random.randint(1, 100)}")
     const runBtn = document.getElementById('runBtn');
     const statusEl = document.getElementById('status');
     
-    // Custom Input UI Elements
     const customInputContainer = document.getElementById('custom-input-container');
     const customInputField = document.getElementById('custom-input-field');
     const customInputSubmit = document.getElementById('custom-input-submit');
     const customInputLabel = document.getElementById('custom-input-label');
     
     let pyodide = null;
-    let mode = 'pyodide';
     let inputResolver = null;
 
-    // --- 1. Load Pyodide ---
+    // --- 1. Load Pyodide & Setup Input ---
     async function initPyodide() {
         try {
             if (typeof loadPyodide === 'undefined') throw new Error("Script not loaded");
             pyodide = await loadPyodide();
             
-            // Expose a JS function to Python that returns a Promise
-            // This is the key fix: we expose the function BEFORE defining input in Python
-            pyodide.globals.set('js_request_input', (prompt) => {
+            // CRITICAL FIX: Explicitly set the JS function in the Python globals
+            // We use a unique name to avoid conflicts
+            pyodide.globals.set("js_input_handler", (prompt) => {
                 return new Promise((resolve) => {
-                    // Show UI
                     customInputContainer.style.display = 'flex';
                     customInputLabel.textContent = prompt || "$";
                     customInputField.value = '';
                     customInputField.focus();
-                    
-                    // Store resolver
                     inputResolver = resolve;
                 });
             });
 
-            // Now define Python's input() to call the JS function
+            // Now define the Python input() function to call our JS handler
             await pyodide.runPythonAsync(`
-                import js
                 def custom_input(prompt=""):
                     # Call the JS function which returns a Promise
-                    promise = js.js_request_input(prompt)
-                    # Wait for the promise to resolve
-                    return promise
+                    # We use pyodide.globals.get to ensure we get the right function
+                    return pyodide.globals.get("js_input_handler")(prompt)
+                
+                # Replace the built-in input
                 input = custom_input
             `);
 
@@ -191,15 +164,15 @@ print(f"Random number: {random.randint(1, 100)}")
             runBtn.disabled = false;
             return true;
         } catch (e) {
-            console.warn("Pyodide failed:", e);
+            console.error("Pyodide failed:", e);
             statusEl.textContent = "Error";
-            statusEl.className = "status sim";
-            outEl.innerHTML = `<span class="error">Failed to load Pyodide: ${e.message}</span>`;
+            statusEl.className = "status error";
+            outEl.innerHTML = `<span class="error">Failed to load: ${e.message}</span>`;
             return false;
         }
     }
 
-    // --- 2. Event Handlers for Custom Input ---
+    // --- 2. Handle User Input ---
     customInputField.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             const value = customInputField.value;
@@ -215,10 +188,9 @@ print(f"Random number: {random.randint(1, 100)}")
     function resolveInput(value) {
         if (inputResolver) {
             inputResolver(value);
-            // Hide UI
             customInputContainer.style.display = 'none';
             inputResolver = null;
-            // Print the input to the console (optional, but looks like VS Code)
+            // Optional: Print the input to the console to mimic VS Code behavior
             // outEl.innerHTML += value + "\n"; 
         }
     }
@@ -230,7 +202,7 @@ print(f"Random number: {random.randint(1, 100)}")
         runBtn.textContent = "Running...";
         
         try {
-            if (mode === 'pyodide') {
+            if (pyodide) {
                 await pyodide.runPythonAsync(codeEl.value);
             }
         } catch (err) {
@@ -242,12 +214,7 @@ print(f"Random number: {random.randint(1, 100)}")
     }
 
     // --- Init ---
-    initPyodide().then(success => {
-        if (!success) {
-            // Fallback could go here if needed
-        }
-    });
-
+    initPyodide();
     runBtn.addEventListener('click', runCode);
 
 </script>
