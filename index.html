@@ -1,982 +1,183 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CHARBURN — Flame-Grilled Fast Food</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Work+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --charcoal:#191410;
-    --charcoal-2:#241d17;
-    --ember:#e8452c;
-    --ember-dark:#b8331e;
-    --flame:#f5a623;
-    --cream:#f3ead9;
-    --smoke:#a99f92;
-    --line:#3a2f26;
-    --good:#5a8f5a;
-    --radius:4px;
-    --maxw:1180px;
-  }
-  *{box-sizing:border-box;margin:0;padding:0;}
-  html{scroll-behavior:smooth;}
-  body{
-    background:var(--charcoal);
-    color:var(--cream);
-    font-family:'Work Sans',sans-serif;
-    line-height:1.5;
-    -webkit-font-smoothing:antialiased;
-  }
-  h1,h2,h3,.display{
-    font-family:'Anton',sans-serif;
-    font-weight:400;
-    text-transform:uppercase;
-    letter-spacing:0.5px;
-    line-height:1.05;
-  }
-  .mono{font-family:'IBM Plex Mono',monospace;}
-  a{color:inherit;text-decoration:none;}
-  ul{list-style:none;}
-  img{max-width:100%;display:block;}
-  button{font-family:inherit;cursor:pointer;border:none;}
-  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px;}
-  ::selection{background:var(--ember);color:var(--cream);}
-  :focus-visible{outline:3px solid var(--flame);outline-offset:2px;}
-
-  /* ---- grate divider (signature motif) ---- */
-  .grate{
-    height:14px;
-    width:100%;
-    background:repeating-linear-gradient(
-      -45deg,
-      var(--ember) 0px, var(--ember) 10px,
-      var(--flame) 10px, var(--flame) 20px
-    );
-    opacity:0.9;
-  }
-  .grate.thin{height:6px;}
-
-  /* ---- header ---- */
-  header{
-    position:sticky;top:0;z-index:500;
-    background:rgba(25,20,16,0.96);
-    backdrop-filter:blur(6px);
-    border-bottom:1px solid var(--line);
-  }
-  .nav{
-    display:flex;align-items:center;justify-content:space-between;
-    padding:16px 28px;max-width:var(--maxw);margin:0 auto;
-  }
-  .logo{
-    font-family:'Anton',sans-serif;
-    font-size:26px;
-    letter-spacing:1px;
-    color:var(--cream);
-    display:flex;align-items:center;gap:8px;
-  }
-  .logo span{color:var(--ember);}
-  .navlinks{display:flex;gap:32px;align-items:center;}
-  .navlinks a{
-    font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;
-    color:var(--smoke);transition:color .15s;
-  }
-  .navlinks a:hover{color:var(--flame);}
-  .cart-btn{
-    position:relative;
-    background:var(--ember);
-    color:var(--cream);
-    padding:10px 18px;
-    border-radius:var(--radius);
-    font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:0.6px;
-    display:flex;align-items:center;gap:8px;
-    transition:background .15s;
-  }
-  .cart-btn:hover{background:var(--ember-dark);}
-  .cart-count{
-    background:var(--charcoal);color:var(--flame);
-    border-radius:50%;min-width:20px;height:20px;
-    display:flex;align-items:center;justify-content:center;
-    font-size:12px;font-family:'IBM Plex Mono',monospace;
-  }
-  .burger-menu{display:none;background:none;color:var(--cream);font-size:26px;}
-
-  /* ---- hero ---- */
-  .hero{
-    position:relative;
-    padding:90px 28px 70px;
-    background:
-      radial-gradient(circle at 80% 20%, rgba(232,69,44,0.25), transparent 55%),
-      radial-gradient(circle at 10% 90%, rgba(245,166,35,0.12), transparent 45%),
-      var(--charcoal);
-    overflow:hidden;
-  }
-  .hero-inner{max-width:var(--maxw);margin:0 auto;display:grid;grid-template-columns:1.1fr 0.9fr;gap:40px;align-items:center;}
-  .eyebrow{
-    color:var(--flame);font-family:'IBM Plex Mono',monospace;font-size:13px;
-    letter-spacing:2px;text-transform:uppercase;margin-bottom:18px;display:flex;align-items:center;gap:10px;
-  }
-  .eyebrow::before{content:"";width:26px;height:2px;background:var(--flame);display:inline-block;}
-  .hero h1{font-size:clamp(42px,6vw,74px);color:var(--cream);}
-  .hero h1 em{font-style:normal;color:var(--ember);}
-  .hero p{max-width:460px;margin-top:20px;color:var(--smoke);font-size:17px;}
-  .hero-ctas{display:flex;gap:14px;margin-top:32px;flex-wrap:wrap;}
-  .btn{
-    padding:15px 28px;border-radius:var(--radius);font-weight:700;
-    text-transform:uppercase;font-size:14px;letter-spacing:0.6px;
-    transition:transform .15s, background .15s;
-    display:inline-block;
-  }
-  .btn-primary{background:var(--ember);color:var(--cream);}
-  .btn-primary:hover{background:var(--ember-dark);transform:translateY(-2px);}
-  .btn-ghost{background:transparent;color:var(--cream);border:2px solid var(--line);}
-  .btn-ghost:hover{border-color:var(--flame);color:var(--flame);}
-
-  .hero-visual{
-    position:relative;
-    aspect-ratio:1/1;
-    border-radius:50%;
-    background:radial-gradient(circle at 35% 30%, #ffb347, var(--ember) 55%, var(--ember-dark) 80%);
-    display:flex;align-items:center;justify-content:center;
-    font-size:min(30vw,220px);
-    box-shadow:0 0 0 10px var(--charcoal-2), 0 0 0 13px var(--line), 0 30px 80px rgba(232,69,44,0.35);
-    animation:sizzle 4s ease-in-out infinite;
-  }
-  @keyframes sizzle{
-    0%,100%{transform:scale(1) rotate(0deg);}
-    50%{transform:scale(1.02) rotate(1deg);}
-  }
-  .hero-stats{display:flex;gap:26px;margin-top:36px;}
-  .hero-stats div{border-left:2px solid var(--line);padding-left:14px;}
-  .hero-stats b{display:block;font-family:'Anton',sans-serif;font-size:26px;color:var(--flame);}
-  .hero-stats span{font-size:12px;color:var(--smoke);text-transform:uppercase;letter-spacing:0.5px;}
-
-  /* ---- section shared ---- */
-  section{padding:80px 0;}
-  .section-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:40px;flex-wrap:wrap;gap:16px;}
-  .section-head h2{font-size:clamp(30px,4vw,46px);}
-  .section-head p{color:var(--smoke);max-width:420px;}
-  .tag{
-    display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:12px;
-    color:var(--flame);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;
-  }
-
-  /* ---- menu tabs ---- */
-  .tabs{display:flex;gap:10px;margin-bottom:36px;flex-wrap:wrap;}
-  .tab{
-    background:var(--charcoal-2);color:var(--smoke);
-    padding:11px 20px;border-radius:999px;font-weight:700;font-size:13px;
-    text-transform:uppercase;letter-spacing:0.5px;border:1px solid var(--line);
-    transition:all .15s;
-  }
-  .tab.active,.tab:hover{background:var(--ember);color:var(--cream);border-color:var(--ember);}
-
-  .menu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
-  .item-card{
-    background:var(--charcoal-2);
-    border:1px solid var(--line);
-    border-radius:var(--radius);
-    padding:22px;
-    display:flex;flex-direction:column;gap:12px;
-    transition:transform .18s, border-color .18s;
-    cursor:pointer;
-  }
-  .item-card:hover{transform:translateY(-4px);border-color:var(--ember);}
-  .item-badge{
-    width:64px;height:64px;border-radius:50%;
-    background:repeating-linear-gradient(-45deg,var(--charcoal) 0 6px, #2a221b 6px 12px);
-    display:flex;align-items:center;justify-content:center;font-size:32px;
-    border:2px solid var(--line);
-  }
-  .item-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
-  .item-name{font-family:'Anton',sans-serif;font-size:19px;letter-spacing:0.3px;}
-  .item-desc{color:var(--smoke);font-size:13.5px;flex:1;}
-  .item-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:auto;}
-  .item-price{font-family:'IBM Plex Mono',monospace;color:var(--flame);font-weight:600;font-size:16px;}
-  .item-cal{font-size:11px;color:var(--smoke);font-family:'IBM Plex Mono',monospace;}
-  .add-btn{
-    background:transparent;border:2px solid var(--ember);color:var(--ember);
-    width:36px;height:36px;border-radius:50%;font-size:20px;font-weight:700;
-    display:flex;align-items:center;justify-content:center;transition:all .15s;
-  }
-  .add-btn:hover{background:var(--ember);color:var(--cream);}
-
-  /* ---- rewards ---- */
-  .rewards{background:var(--charcoal-2);}
-  .rewards-inner{display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:center;}
-  .rewards-card{
-    background:var(--charcoal);border:1px solid var(--line);border-radius:8px;padding:30px;
-    box-shadow:0 20px 50px rgba(0,0,0,0.4);
-  }
-  .rewards-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--line);}
-  .rewards-row:last-child{border-bottom:none;}
-  .rewards-points{font-family:'IBM Plex Mono',monospace;color:var(--flame);font-weight:600;}
-  .progress-track{height:10px;background:var(--charcoal-2);border-radius:6px;overflow:hidden;margin:14px 0 4px;}
-  .progress-fill{height:100%;background:linear-gradient(90deg,var(--ember),var(--flame));width:64%;}
-  .feature-list{display:flex;flex-direction:column;gap:22px;}
-  .feature-list li{display:flex;gap:16px;}
-  .feature-num{
-    font-family:'IBM Plex Mono',monospace;color:var(--ember);font-weight:600;font-size:14px;
-    min-width:28px;
-  }
-  .feature-list h4{font-family:'Anton',sans-serif;font-size:17px;margin-bottom:4px;letter-spacing:0.3px;}
-  .feature-list p{color:var(--smoke);font-size:14px;}
-
-  /* ---- locations ---- */
-  .loc-search{
-    display:flex;gap:10px;margin-bottom:30px;max-width:420px;
-  }
-  .loc-search input{
-    flex:1;background:var(--charcoal-2);border:1px solid var(--line);color:var(--cream);
-    padding:13px 16px;border-radius:var(--radius);font-size:14px;
-  }
-  .loc-search input:focus{border-color:var(--flame);outline:none;}
-  .loc-search button{
-    background:var(--ember);color:var(--cream);padding:0 22px;border-radius:var(--radius);font-weight:700;text-transform:uppercase;font-size:13px;
-  }
-  .loc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
-  .loc-card{background:var(--charcoal-2);border:1px solid var(--line);border-radius:var(--radius);padding:22px;}
-  .loc-card h4{font-family:'Anton',sans-serif;font-size:18px;margin-bottom:6px;}
-  .loc-card .addr{color:var(--smoke);font-size:13.5px;margin-bottom:10px;}
-  .loc-meta{display:flex;justify-content:space-between;font-size:12px;color:var(--flame);font-family:'IBM Plex Mono',monospace;}
-  .loc-open{color:var(--good);}
-
-  /* ---- app promo ---- */
-  .app-promo{
-    background:linear-gradient(120deg,var(--ember-dark),var(--ember));
-    border-radius:12px;
-    padding:60px;
-    display:flex;justify-content:space-between;align-items:center;gap:30px;flex-wrap:wrap;
-    margin:0 28px;
-    max-width:calc(var(--maxw) - 0px);
-    margin-left:auto;margin-right:auto;
-  }
-  .app-promo h2{color:var(--cream);font-size:clamp(28px,4vw,42px);max-width:480px;}
-  .app-promo p{color:rgba(255,255,255,0.85);margin-top:12px;max-width:420px;}
-  .app-btns{display:flex;gap:12px;margin-top:24px;}
-  .app-btns .btn-ghost{border-color:rgba(255,255,255,0.5);}
-  .app-btns .btn-ghost:hover{border-color:var(--cream);color:var(--cream);}
-
-  /* ---- footer ---- */
-  footer{padding:60px 0 30px;border-top:1px solid var(--line);margin-top:40px;}
-  .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;}
-  .footer-grid h5{font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--flame);margin-bottom:16px;}
-  .footer-grid li{margin-bottom:10px;}
-  .footer-grid a{color:var(--smoke);font-size:14px;transition:color .15s;}
-  .footer-grid a:hover{color:var(--cream);}
-  .footer-bottom{
-    display:flex;justify-content:space-between;margin-top:50px;padding-top:24px;border-top:1px solid var(--line);
-    font-size:12.5px;color:var(--smoke);flex-wrap:wrap;gap:10px;
-  }
-
-  /* ---- cart drawer ---- */
-  .overlay{
-    position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:900;
-    opacity:0;pointer-events:none;transition:opacity .25s;
-  }
-  .overlay.show{opacity:1;pointer-events:auto;}
-  .drawer{
-    position:fixed;top:0;right:0;height:100%;width:420px;max-width:92vw;
-    background:var(--charcoal-2);z-index:950;
-    display:flex;flex-direction:column;
-    transform:translateX(100%);transition:transform .3s ease;
-    border-left:1px solid var(--line);
-  }
-  .drawer.show{transform:translateX(0);}
-  .drawer-head{
-    padding:22px 24px;border-bottom:1px solid var(--line);
-    display:flex;justify-content:space-between;align-items:center;
-  }
-  .drawer-head h3{font-family:'Anton',sans-serif;font-size:20px;}
-  .close-btn{background:none;color:var(--cream);font-size:24px;line-height:1;}
-  .drawer-body{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:16px;}
-  .cart-line{display:flex;gap:14px;padding-bottom:16px;border-bottom:1px solid var(--line);}
-  .cart-line .item-badge{width:50px;height:50px;font-size:24px;flex-shrink:0;}
-  .cart-line-info{flex:1;}
-  .cart-line-info .name{font-weight:700;font-size:14.5px;}
-  .cart-line-info .opts{font-size:12px;color:var(--smoke);margin-top:2px;}
-  .qty-row{display:flex;align-items:center;gap:10px;margin-top:8px;}
-  .qty-btn{
-    width:26px;height:26px;border-radius:50%;background:var(--charcoal);color:var(--cream);
-    border:1px solid var(--line);font-weight:700;display:flex;align-items:center;justify-content:center;
-  }
-  .qty-val{font-family:'IBM Plex Mono',monospace;min-width:18px;text-align:center;}
-  .remove-link{font-size:11.5px;color:var(--ember);text-decoration:underline;margin-left:auto;}
-  .line-price{font-family:'IBM Plex Mono',monospace;color:var(--flame);font-size:14px;white-space:nowrap;}
-  .empty-cart{text-align:center;color:var(--smoke);padding:60px 20px;}
-  .empty-cart .emoji{font-size:50px;margin-bottom:16px;}
-  .drawer-foot{padding:22px 24px;border-top:1px solid var(--line);}
-  .cost-row{display:flex;justify-content:space-between;font-size:14px;color:var(--smoke);margin-bottom:8px;}
-  .cost-row.total{color:var(--cream);font-weight:700;font-size:17px;margin-top:10px;padding-top:14px;border-top:1px dashed var(--line);}
-  .cost-row.total .val{color:var(--flame);}
-  .checkout-btn{
-    width:100%;background:var(--ember);color:var(--cream);padding:16px;border-radius:var(--radius);
-    font-weight:700;text-transform:uppercase;letter-spacing:0.6px;margin-top:16px;font-size:14.5px;
-    transition:background .15s;
-  }
-  .checkout-btn:hover{background:var(--ember-dark);}
-  .checkout-btn:disabled{background:var(--line);color:var(--smoke);cursor:not-allowed;}
-
-  /* ---- modal (item customize + checkout confirm) ---- */
-  .modal{
-    position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;
-    padding:20px;opacity:0;pointer-events:none;transition:opacity .2s;
-  }
-  .modal.show{opacity:1;pointer-events:auto;}
-  .modal-card{
-    background:var(--charcoal-2);border:1px solid var(--line);border-radius:8px;
-    max-width:480px;width:100%;max-height:88vh;overflow-y:auto;
-    padding:30px;position:relative;
-    transform:translateY(20px);transition:transform .2s;
-  }
-  .modal.show .modal-card{transform:translateY(0);}
-  .modal-close{position:absolute;top:18px;right:18px;background:none;color:var(--smoke);font-size:24px;}
-  .modal-close:hover{color:var(--cream);}
-  .modal-badge{width:80px;height:80px;font-size:42px;margin-bottom:16px;}
-  .modal-card h3{font-size:26px;margin-bottom:6px;}
-  .modal-desc{color:var(--smoke);font-size:14px;margin-bottom:20px;}
-  .opt-group{margin-bottom:22px;}
-  .opt-label{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--flame);margin-bottom:10px;display:block;font-family:'IBM Plex Mono',monospace;}
-  .opt-choices{display:flex;gap:10px;flex-wrap:wrap;}
-  .opt-choice{
-    padding:9px 16px;border-radius:999px;border:1px solid var(--line);background:var(--charcoal);
-    font-size:13px;color:var(--cream);transition:all .15s;
-  }
-  .opt-choice.selected,.opt-choice:hover{border-color:var(--ember);color:var(--flame);}
-  .spice-row{display:flex;align-items:center;gap:14px;}
-  input[type=range]{-webkit-appearance:none;flex:1;height:6px;border-radius:3px;background:var(--line);}
-  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--ember);cursor:pointer;border:3px solid var(--cream);}
-  .spice-emoji{font-size:22px;min-width:30px;text-align:center;}
-  .modal-foot{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:10px;}
-  .modal-qty{display:flex;align-items:center;gap:12px;}
-  .modal-add{
-    flex:1;background:var(--ember);color:var(--cream);padding:15px;border-radius:var(--radius);
-    font-weight:700;text-transform:uppercase;font-size:14px;
-  }
-  .modal-add:hover{background:var(--ember-dark);}
-
-  /* checkout confirmation - ticket style */
-  .ticket{
-    background:var(--cream);color:var(--charcoal);
-    border-radius:6px;padding:26px;font-family:'IBM Plex Mono',monospace;
-    background-image:repeating-linear-gradient(0deg,rgba(0,0,0,0.03) 0 1px, transparent 1px 22px);
-  }
-  .ticket-head{text-align:center;border-bottom:2px dashed var(--charcoal);padding-bottom:14px;margin-bottom:14px;}
-  .ticket-head .brand{font-family:'Anton',sans-serif;font-size:22px;}
-  .ticket-num{font-size:13px;margin-top:6px;}
-  .ticket-row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;}
-  .ticket-total{border-top:2px dashed var(--charcoal);margin-top:10px;padding-top:10px;font-weight:700;display:flex;justify-content:space-between;}
-  .ticket-eta{text-align:center;margin-top:18px;font-size:13px;}
-  .ticket-eta b{display:block;font-size:24px;color:var(--ember-dark);font-family:'Anton',sans-serif;}
-
-  .toast{
-    position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(100px);
-    background:var(--charcoal-2);border:1px solid var(--ember);color:var(--cream);
-    padding:14px 24px;border-radius:var(--radius);z-index:1100;font-size:14px;font-weight:600;
-    display:flex;align-items:center;gap:10px;transition:transform .3s ease;
-  }
-  .toast.show{transform:translateX(-50%) translateY(0);}
-
-  @media(max-width:900px){
-    .navlinks{display:none;}
-    .burger-menu{display:block;}
-    .hero-inner{grid-template-columns:1fr;}
-    .hero-visual{max-width:320px;margin:0 auto;}
-    .menu-grid{grid-template-columns:repeat(2,1fr);}
-    .rewards-inner{grid-template-columns:1fr;}
-    .loc-grid{grid-template-columns:1fr;}
-    .footer-grid{grid-template-columns:1fr 1fr;}
-    .app-promo{padding:36px;}
-  }
-  @media(max-width:560px){
-    .menu-grid{grid-template-columns:1fr;}
-    .footer-grid{grid-template-columns:1fr;}
-    .drawer{width:100%;}
-  }
-  @media (prefers-reduced-motion:reduce){
-    *{animation:none !important;transition:none !important;}
-  }
-</style>
+    <meta charset="UTF-8">
+    <title>Python Runner (Real or Simulated)</title>
+    <!-- Try to load Pyodide (Real Python) -->
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.26.1/full/pyodide.js"></script>
+    <style>
+        :root { --bg: #f4f4f9; --editor: #282c34; --out: #1e1e1e; --accent: #007bff; }
+        body { font-family: system-ui, sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background: var(--bg); }
+        header { background: white; padding: 1rem; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        h1 { margin: 0; font-size: 1.2rem; color: #333; }
+        .status { font-size: 0.8rem; padding: 4px 8px; border-radius: 4px; background: #eee; }
+        .status.ready { background: #d4edda; color: #155724; }
+        .status.sim { background: #fff3cd; color: #856404; }
+        .btn { background: var(--accent); color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
+        .container { display: flex; flex: 1; padding: 1rem; gap: 1rem; }
+        .panel { flex: 1; display: flex; flex-direction: column; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; }
+        .label { background: #eee; padding: 8px; font-size: 0.8rem; font-weight: bold; color: #555; text-transform: uppercase; }
+        textarea { flex: 1; border: none; padding: 1rem; font-family: 'Consolas', monospace; background: var(--editor); color: #abb2bf; resize: none; outline: none; }
+        #output { flex: 1; padding: 1rem; font-family: 'Consolas', monospace; background: var(--out); color: #e5e5e5; overflow-y: auto; white-space: pre-wrap; }
+        .error { color: #ff4d4d; }
+    </style>
 </head>
 <body>
 
 <header>
-  <nav class="nav">
-    <div class="logo">CHAR<span>BURN</span></div>
-    <div class="navlinks">
-      <a href="#menu">Menu</a>
-      <a href="#rewards">Ember Rewards</a>
-      <a href="#locations">Locations</a>
-      <a href="#app">Get the App</a>
+    <h1>Python Runner</h1>
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <span id="status" class="status">Loading...</span>
+        <button id="runBtn" class="btn" disabled>▶ Run</button>
     </div>
-    <button class="cart-btn" id="openCartBtn" aria-label="Open cart">
-      🛒 Cart <span class="cart-count" id="cartCount">0</span>
-    </button>
-  </nav>
-  <div class="grate thin"></div>
 </header>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-inner">
-    <div>
-      <div class="eyebrow">Flame-grilled since 1984</div>
-      <h1>Real fire. <br>Real fast. <em>Real flavor.</em></h1>
-      <p>Every patty hits an open flame, every bun gets toasted to order, and your food's ready before the ticket cools. Welcome to Charburn.</p>
-      <div class="hero-ctas">
-        <a href="#menu" class="btn btn-primary">Order Now</a>
-        <a href="#locations" class="btn btn-ghost">Find a Location</a>
-      </div>
-      <div class="hero-stats">
-        <div><b>412</b><span>Locations</span></div>
-        <div><b>4.7★</b><span>App Rating</span></div>
-        <div><b>90s</b><span>Avg. Grill Time</span></div>
-      </div>
+<div class="container">
+    <div class="panel">
+        <div class="label">Python Code</div>
+        <textarea id="code" spellcheck="false"># Try real Python commands:
+import math
+import random
+
+name = input("What is your name? ")
+age = int(input("How old are you? "))
+
+print(f"Hello {name}!")
+print(f"Next year you will be {age + 1}.")
+print(f"Square root of 16: {math.sqrt(16)}")
+print(f"Random number: {random.randint(1, 100)}")
+</textarea>
     </div>
-    <div class="hero-visual">🔥</div>
-  </div>
-</section>
-<div class="grate"></div>
-
-<!-- MENU -->
-<section id="menu">
-  <div class="wrap">
-    <div class="section-head">
-      <div>
-        <span class="tag">The Menu</span>
-        <h2>Order off the grill</h2>
-      </div>
-      <p>Tap anything to customize spice level, toppings, and size before it hits your cart.</p>
+    <div class="panel">
+        <div class="label">Console Output</div>
+        <div id="output"></div>
     </div>
-
-    <div class="tabs" id="tabs">
-      <button class="tab active" data-cat="burgers">Burgers</button>
-      <button class="tab" data-cat="chicken">Chicken</button>
-      <button class="tab" data-cat="sides">Sides</button>
-      <button class="tab" data-cat="drinks">Drinks</button>
-      <button class="tab" data-cat="desserts">Desserts</button>
-    </div>
-
-    <div class="menu-grid" id="menuGrid"></div>
-  </div>
-</section>
-
-<div class="grate thin"></div>
-
-<!-- REWARDS -->
-<section id="rewards" class="rewards">
-  <div class="wrap rewards-inner">
-    <ul class="feature-list">
-      <li>
-        <div class="feature-num">01</div>
-        <div><h4>Earn while you eat</h4><p>1 ember point for every $1 spent, in-store or through the app.</p></div>
-      </li>
-      <li>
-        <div class="feature-num">02</div>
-        <div><h4>Redeem for the good stuff</h4><p>500 points unlocks a free combo. No blackout items, no expiration games.</p></div>
-      </li>
-      <li>
-        <div class="feature-num">03</div>
-        <div><h4>Skip the line</h4><p>Members get a dedicated pickup shelf and early access to drops.</p></div>
-      </li>
-      <li>
-        <div class="feature-num">04</div>
-        <div><h4>Birthday flame</h4><p>A free Double Smoke Stack, on us, the week of your birthday.</p></div>
-      </li>
-    </ul>
-    <div class="rewards-card">
-      <span class="tag">Your Ember Rewards</span>
-      <h3 style="font-size:22px;margin-bottom:14px;">Member since 2023</h3>
-      <div class="progress-track"><div class="progress-fill"></div></div>
-      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--smoke);margin-bottom:20px;">
-        <span>320 pts</span><span>500 pts for free combo</span>
-      </div>
-      <div class="rewards-row"><span>Free Fries Friday</span><span class="rewards-points">Active</span></div>
-      <div class="rewards-row"><span>Double points weekend</span><span class="rewards-points">+2x</span></div>
-      <div class="rewards-row"><span>Referral bonus</span><span class="rewards-points">150 pts</span></div>
-    </div>
-  </div>
-</section>
-
-<div class="grate"></div>
-
-<!-- LOCATIONS -->
-<section id="locations">
-  <div class="wrap">
-    <div class="section-head">
-      <div>
-        <span class="tag">Find Us</span>
-        <h2>Grills near you</h2>
-      </div>
-      <p>Search by city or zip. Every location shown has a live grill and a drive-thru.</p>
-    </div>
-    <div class="loc-search">
-      <input type="text" id="locSearch" placeholder="Search city, e.g. 'Denver'">
-      <button id="locSearchBtn">Search</button>
-    </div>
-    <div class="loc-grid" id="locGrid"></div>
-  </div>
-</section>
-
-<!-- APP PROMO -->
-<section id="app">
-  <div class="app-promo">
-    <div>
-      <h2>Order ahead. Skip the line. Earn double.</h2>
-      <p>The Charburn app puts the whole menu, your rewards, and a live order tracker in your pocket.</p>
-      <div class="app-btns">
-        <a href="#" class="btn btn-ghost" id="appStoreBtn">App Store</a>
-        <a href="#" class="btn btn-ghost" id="playStoreBtn">Google Play</a>
-      </div>
-    </div>
-    <div style="font-size:120px;">📱🔥</div>
-  </div>
-</section>
-
-<footer>
-  <div class="wrap">
-    <div class="footer-grid">
-      <div>
-        <div class="logo" style="margin-bottom:14px;">CHAR<span>BURN</span></div>
-        <p style="color:var(--smoke);font-size:14px;max-width:280px;">Flame-grilled fast food, since 1984. Real fire, every order.</p>
-      </div>
-      <div>
-        <h5>Company</h5>
-        <ul><li><a href="#">About</a></li><li><a href="#">Careers</a></li><li><a href="#">Franchise With Us</a></li><li><a href="#">Press</a></li></ul>
-      </div>
-      <div>
-        <h5>Menu</h5>
-        <ul><li><a href="#menu">Burgers</a></li><li><a href="#menu">Chicken</a></li><li><a href="#menu">Sides &amp; Drinks</a></li><li><a href="#menu">Desserts</a></li></ul>
-      </div>
-      <div>
-        <h5>Support</h5>
-        <ul><li><a href="#">Contact Us</a></li><li><a href="#">Nutrition Info</a></li><li><a href="#locations">Locations</a></li><li><a href="#rewards">Ember Rewards</a></li></ul>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <span>© 2026 Charburn Restaurants LLC. All rights reserved.</span>
-      <span>Prices vary by location. Nutrition info available on request.</span>
-    </div>
-  </div>
-</footer>
-
-<!-- CART DRAWER -->
-<div class="overlay" id="overlay"></div>
-<div class="drawer" id="cartDrawer">
-  <div class="drawer-head">
-    <h3>Your Order</h3>
-    <button class="close-btn" id="closeCartBtn" aria-label="Close cart">×</button>
-  </div>
-  <div class="drawer-body" id="cartBody"></div>
-  <div class="drawer-foot" id="cartFoot">
-    <div class="cost-row"><span>Subtotal</span><span class="val" id="subtotalVal">$0.00</span></div>
-    <div class="cost-row"><span>Tax (8%)</span><span class="val" id="taxVal">$0.00</span></div>
-    <div class="cost-row total"><span>Total</span><span class="val" id="totalVal">$0.00</span></div>
-    <button class="checkout-btn" id="checkoutBtn" disabled>Checkout</button>
-  </div>
 </div>
-
-<!-- ITEM CUSTOMIZE MODAL -->
-<div class="modal" id="itemModal">
-  <div class="modal-card" id="itemModalCard"></div>
-</div>
-
-<!-- CHECKOUT CONFIRM MODAL -->
-<div class="modal" id="confirmModal">
-  <div class="modal-card" id="confirmModalCard"></div>
-</div>
-
-<div class="toast" id="toast"></div>
 
 <script>
-/* =========================================================
-   DATA
-========================================================= */
-const MENU = {
-  burgers: [
-    {id:'b1', name:'Original Charburn', desc:'Flame-grilled beef patty, cheddar, pickles, house ember sauce.', price:6.49, cal:520, icon:'🍔'},
-    {id:'b2', name:'Double Smoke Stack', desc:'Two patties, smoked gouda, crispy onions, BBQ glaze.', price:8.99, cal:780, icon:'🍔'},
-    {id:'b3', name:'Blaze Bacon Deluxe', desc:'Applewood bacon, pepper jack, chipotle mayo, tomato.', price:7.99, cal:690, icon:'🥓'},
-    {id:'b4', name:'Veggie Ember', desc:'Charred black bean patty, avocado, roasted pepper aioli.', price:6.99, cal:480, icon:'🥬'},
-    {id:'b5', name:'Classic Cheeseburger', desc:'Single patty, American cheese, onion, mustard, ketchup.', price:4.99, cal:410, icon:'🧀'},
-  ],
-  chicken: [
-    {id:'c1', name:'Firecracker Tenders (4pc)', desc:'Hand-breaded tenders tossed in ghost pepper glaze.', price:6.99, cal:560, icon:'🍗'},
-    {id:'c2', name:'Smoky BBQ Chicken Sandwich', desc:'Grilled chicken breast, smoked cheddar, crispy slaw.', price:7.49, cal:610, icon:'🐔'},
-    {id:'c3', name:'Nashville Hot Sandwich', desc:'Crispy fried chicken, hot oil brush, pickles, brioche.', price:7.99, cal:640, icon:'🌶️'},
-    {id:'c4', name:'Grilled Chicken Wrap', desc:'Flame-grilled chicken, romaine, ranch, cheddar in a tortilla.', price:6.49, cal:450, icon:'🌯'},
-  ],
-  sides: [
-    {id:'s1', name:'Ash-Salted Fries', desc:'Twice-cooked fries with smoked sea salt.', price:2.99, cal:380, icon:'🍟'},
-    {id:'s2', name:'Charred Corn Ribs', desc:'Sweet corn, char-grilled, chili-lime butter.', price:3.99, cal:220, icon:'🌽'},
-    {id:'s3', name:'Onion Ember Rings', desc:'Beer-battered onion rings, smoky dip.', price:3.49, cal:340, icon:'🧅'},
-    {id:'s4', name:'Loaded Grill Fries', desc:'Fries topped with cheese sauce, bacon bits, scallions.', price:4.99, cal:520, icon:'🧇'},
-  ],
-  drinks: [
-    {id:'d1', name:'Fountain Cola', desc:'Ice-cold classic cola.', price:2.29, cal:210, icon:'🥤'},
-    {id:'d2', name:'Root Beer Float', desc:'Root beer with vanilla soft serve.', price:3.99, cal:380, icon:'🍺'},
-    {id:'d3', name:'Southern Sweet Tea', desc:'Brewed fresh daily, lightly sweetened.', price:2.29, cal:150, icon:'🧊'},
-    {id:'d4', name:'Vanilla Bean Shake', desc:'Hand-spun vanilla bean milkshake.', price:4.49, cal:560, icon:'🥛'},
-  ],
-  desserts: [
-    {id:'e1', name:'Molten Fudge Pie', desc:'Warm chocolate fudge pie, molten center.', price:3.49, cal:410, icon:'🍫'},
-    {id:'e2', name:"Fire-Roasted S'mores Cone", desc:'Torched marshmallow, graham crumble, soft serve.', price:3.99, cal:390, icon:'🍦'},
-    {id:'e3', name:'Cinnamon Ember Bites', desc:'Fried dough bites, cinnamon sugar, caramel dip.', price:3.29, cal:350, icon:'🍩'},
-  ]
-};
+    const codeEl = document.getElementById('code');
+    const outEl = document.getElementById('output');
+    const runBtn = document.getElementById('runBtn');
+    const statusEl = document.getElementById('status');
+    
+    let pyodide = null;
+    let mode = 'sim'; // 'pyodide' or 'sim'
 
-const LOCATIONS = [
-  {city:'Denver, CO', addr:'1420 Larimer St', hours:'6am – 12am', status:'Open now'},
-  {city:'Austin, TX', addr:'900 Congress Ave', hours:'6am – 1am', status:'Open now'},
-  {city:'Portland, OR', addr:'220 SW Ankeny St', hours:'7am – 11pm', status:'Open now'},
-  {city:'Nashville, TN', addr:'615 Broadway', hours:'6am – 12am', status:'Open now'},
-  {city:'Chicago, IL', addr:'88 W Randolph St', hours:'6am – 1am', status:'Open now'},
-  {city:'Phoenix, AZ', addr:'310 N Central Ave', hours:'7am – 11pm', status:'Closes 11pm'},
-];
+    // --- 1. Try to load Real Python (Pyodide) ---
+    async function initPyodide() {
+        try {
+            if (typeof loadPyodide === 'undefined') throw new Error("Script not loaded");
+            pyodide = await loadPyodide();
+            
+            // Override input() to use browser prompt
+            await pyodide.runPythonAsync(`
+                import js
+                def input(prompt=""):
+                    return js.prompt(prompt) or ""
+            `);
+            
+            pyodide.setStdout({ batched: (m) => outEl.innerHTML += m + "\n" });
+            pyodide.setStderr({ batched: (m) => outEl.innerHTML += `<span class="error">${m}</span>\n` });
+            
+            mode = 'pyodide';
+            statusEl.textContent = "Ready (Real Python)";
+            statusEl.className = "status ready";
+            runBtn.disabled = false;
+            return true;
+        } catch (e) {
+            console.warn("Pyodide failed:", e);
+            return false;
+        }
+    }
 
-const SPICE_EMOJI = ['😌','🌶️','🌶️🌶️','🌶️🌶️🌶️'];
-const SIZE_MULT = {'Regular':1, 'Large':1.35};
+    // --- 2. Fallback Simulation (If Pyodide fails) ---
+    function runSimulation() {
+        const code = codeEl.value;
+        const lines = code.split('\n');
+        let output = [];
+        let variables = {};
+        
+        try {
+            for (let line of lines) {
+                line = line.trim();
+                if (!line || line.startsWith('#')) continue;
 
-/* =========================================================
-   STATE
-========================================================= */
-let cart = []; // {lineId, itemId, name, icon, unitPrice, qty, size, spice, addons}
-let activeCat = 'burgers';
-let currentModalItem = null;
+                // Handle input()
+                if (line.match(/.*=\s*int\s*\(\s*input\s*\(/)) {
+                    const promptMatch = line.match(/input\s*\(\s*['"](.*)['"]\s*\)/);
+                    const promptText = promptMatch ? promptMatch[1] : "";
+                    const varMatch = line.match(/^(\w+)\s*=/);
+                    const varName = varMatch ? varMatch[1] : "unknown";
+                    
+                    const val = prompt(promptText);
+                    if (val === null) throw new Error("User cancelled");
+                    const num = parseInt(val);
+                    if (isNaN(num)) throw new Error(`ValueError: invalid literal for int() with base 10: '${val}'`);
+                    variables[varName] = num;
+                    continue;
+                }
 
-/* =========================================================
-   RENDER MENU
-========================================================= */
-const menuGrid = document.getElementById('menuGrid');
-function renderMenu(cat){
-  menuGrid.innerHTML = '';
-  MENU[cat].forEach(item=>{
-    const card = document.createElement('div');
-    card.className = 'item-card';
-    card.innerHTML = `
-      <div class="item-top">
-        <div class="item-badge">${item.icon}</div>
-        <button class="add-btn" aria-label="Quick add ${item.name}">+</button>
-      </div>
-      <div class="item-name">${item.name}</div>
-      <div class="item-desc">${item.desc}</div>
-      <div class="item-bottom">
-        <span class="item-price">$${item.price.toFixed(2)}</span>
-        <span class="item-cal">${item.cal} cal</span>
-      </div>
-    `;
-    card.querySelector('.add-btn').addEventListener('click', (e)=>{
-      e.stopPropagation();
-      quickAdd(item);
+                // Handle print()
+                if (line.startsWith('print(')) {
+                    let content = line.slice(6, -1); // remove print( and )
+                    // Simple string handling
+                    if ((content.startsWith("'") && content.includes("'")) || (content.startsWith('"') && content.includes('"'))) {
+                        let q = content[0];
+                        let txt = content.slice(1, content.lastIndexOf(q));
+                        // Replace {var}
+                        txt = txt.replace(/\{(\w+)\}/g, (_, v) => variables[v] !== undefined ? variables[v] : `{${v}}`);
+                        output.push(txt);
+                    } else {
+                        // Multiple args
+                        let args = content.split(',').map(a => a.trim());
+                        let res = args.map(a => {
+                            if (variables[a] !== undefined) return variables[a];
+                            if ((a[0]==='"' || a[0]==="'") && a.slice(-1)===a[0]) return a.slice(1, -1);
+                            return a;
+                        }).join(' ');
+                        output.push(res);
+                    }
+                    continue;
+                }
+
+                // Handle simple assignment: x = 5
+                if (line.includes('=')) {
+                    let [k, v] = line.split('=').map(s => s.trim());
+                    if (!isNaN(v)) variables[k] = Number(v);
+                }
+            }
+            outEl.innerHTML = output.join('\n') + '\n';
+        } catch (e) {
+            outEl.innerHTML = `<span class="error">${e.message}</span>\n`;
+        }
+    }
+
+    // --- Initialization ---
+    async function init() {
+        const success = await initPyodide();
+        if (!success) {
+            mode = 'sim';
+            statusEl.textContent = "Running (Simulation Mode)";
+            statusEl.className = "status sim";
+            runBtn.disabled = false;
+            outEl.innerHTML = "<span style='color:orange'>Note: Real Python blocked. Running in simulation mode.</span>\n";
+        }
+    }
+
+    init();
+
+    runBtn.addEventListener('click', () => {
+        outEl.innerHTML = '';
+        if (mode === 'pyodide') {
+            pyodide.runPythonAsync(codeEl.value).catch(e => {
+                outEl.innerHTML += `<span class="error">${e}</span>\n`;
+            });
+        } else {
+            runSimulation();
+        }
     });
-    card.addEventListener('click', ()=> openItemModal(item));
-    menuGrid.appendChild(card);
-  });
-}
-
-document.getElementById('tabs').addEventListener('click', (e)=>{
-  const btn = e.target.closest('.tab');
-  if(!btn) return;
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  btn.classList.add('active');
-  activeCat = btn.dataset.cat;
-  renderMenu(activeCat);
-});
-
-renderMenu(activeCat);
-
-/* =========================================================
-   TOAST
-========================================================= */
-const toastEl = document.getElementById('toast');
-let toastTimer;
-function showToast(msg){
-  toastEl.textContent = msg;
-  toastEl.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(()=> toastEl.classList.remove('show'), 2200);
-}
-
-/* =========================================================
-   QUICK ADD (no customization)
-========================================================= */
-function quickAdd(item){
-  addToCart({
-    itemId:item.id, name:item.name, icon:item.icon,
-    unitPrice:item.price, qty:1, size:'Regular', spice:'Mild', addons:[]
-  });
-  showToast(`${item.name} added to cart`);
-}
-
-/* =========================================================
-   ITEM CUSTOMIZE MODAL
-========================================================= */
-const itemModal = document.getElementById('itemModal');
-const itemModalCard = document.getElementById('itemModalCard');
-
-function openItemModal(item){
-  currentModalItem = item;
-  let qty = 1;
-  let size = 'Regular';
-  let spiceIdx = 0;
-  const availableAddons = ['Extra Cheese (+$0.75)','Bacon (+$1.25)','Avocado (+$1.00)'];
-  let selectedAddons = [];
-
-  function render(){
-    const addonTotal = selectedAddons.reduce((s,a)=>{
-      const price = parseFloat(a.match(/\$([\d.]+)/)[1]);
-      return s + price;
-    },0);
-    const unit = item.price * SIZE_MULT[size] + addonTotal;
-    itemModalCard.innerHTML = `
-      <button class="modal-close" aria-label="Close">×</button>
-      <div class="item-badge modal-badge">${item.icon}</div>
-      <h3>${item.name}</h3>
-      <p class="modal-desc">${item.desc} · ${item.cal} cal</p>
-
-      <div class="opt-group">
-        <span class="opt-label">Size</span>
-        <div class="opt-choices" id="sizeChoices">
-          ${['Regular','Large'].map(s=>`<button class="opt-choice ${s===size?'selected':''}" data-size="${s}">${s}</button>`).join('')}
-        </div>
-      </div>
-
-      <div class="opt-group">
-        <span class="opt-label">Spice Level</span>
-        <div class="spice-row">
-          <span class="spice-emoji">${SPICE_EMOJI[spiceIdx]}</span>
-          <input type="range" min="0" max="3" step="1" value="${spiceIdx}" id="spiceSlider">
-        </div>
-      </div>
-
-      <div class="opt-group">
-        <span class="opt-label">Add-ons</span>
-        <div class="opt-choices" id="addonChoices">
-          ${availableAddons.map(a=>`<button class="opt-choice ${selectedAddons.includes(a)?'selected':''}" data-addon="${a}">${a}</button>`).join('')}
-        </div>
-      </div>
-
-      <div class="modal-foot">
-        <div class="modal-qty">
-          <button class="qty-btn" id="modalMinus">−</button>
-          <span class="qty-val" id="modalQtyVal">${qty}</span>
-          <button class="qty-btn" id="modalPlus">+</button>
-        </div>
-        <button class="modal-add" id="modalAddBtn">Add to Cart · $${(unit*qty).toFixed(2)}</button>
-      </div>
-    `;
-
-    itemModalCard.querySelector('.modal-close').addEventListener('click', closeItemModal);
-    itemModalCard.querySelectorAll('#sizeChoices .opt-choice').forEach(b=>{
-      b.addEventListener('click', ()=>{ size = b.dataset.size; render(); });
-    });
-    itemModalCard.querySelectorAll('#addonChoices .opt-choice').forEach(b=>{
-      b.addEventListener('click', ()=>{
-        const a = b.dataset.addon;
-        if(selectedAddons.includes(a)) selectedAddons = selectedAddons.filter(x=>x!==a);
-        else selectedAddons.push(a);
-        render();
-      });
-    });
-    itemModalCard.querySelector('#spiceSlider').addEventListener('input', (e)=>{
-      spiceIdx = parseInt(e.target.value);
-      render();
-    });
-    itemModalCard.querySelector('#modalMinus').addEventListener('click', ()=>{
-      if(qty>1) qty--; render();
-    });
-    itemModalCard.querySelector('#modalPlus').addEventListener('click', ()=>{
-      qty++; render();
-    });
-    itemModalCard.querySelector('#modalAddBtn').addEventListener('click', ()=>{
-      addToCart({
-        itemId:item.id, name:item.name, icon:item.icon,
-        unitPrice:unit, qty:qty, size:size,
-        spice:['Mild','Medium','Hot','Blazing'][spiceIdx],
-        addons:selectedAddons.map(a=>a.split(' (')[0])
-      });
-      showToast(`${item.name} added to cart`);
-      closeItemModal();
-    });
-  }
-  render();
-  itemModal.classList.add('show');
-}
-function closeItemModal(){ itemModal.classList.remove('show'); }
-itemModal.addEventListener('click', (e)=>{ if(e.target === itemModal) closeItemModal(); });
-
-/* =========================================================
-   CART LOGIC
-========================================================= */
-let lineIdCounter = 1;
-function addToCart(line){
-  line.lineId = lineIdCounter++;
-  cart.push(line);
-  renderCart();
-}
-function removeLine(lineId){
-  cart = cart.filter(l=>l.lineId !== lineId);
-  renderCart();
-}
-function changeQty(lineId, delta){
-  const line = cart.find(l=>l.lineId===lineId);
-  if(!line) return;
-  line.qty += delta;
-  if(line.qty <= 0) removeLine(lineId);
-  else renderCart();
-}
-
-const cartBody = document.getElementById('cartBody');
-const cartCountEl = document.getElementById('cartCount');
-const subtotalVal = document.getElementById('subtotalVal');
-const taxVal = document.getElementById('taxVal');
-const totalVal = document.getElementById('totalVal');
-const checkoutBtn = document.getElementById('checkoutBtn');
-
-function renderCart(){
-  const totalQty = cart.reduce((s,l)=>s+l.qty,0);
-  cartCountEl.textContent = totalQty;
-
-  if(cart.length === 0){
-    cartBody.innerHTML = `<div class="empty-cart"><div class="emoji">🍔</div>Your cart is empty.<br>Go grab something off the grill.</div>`;
-    checkoutBtn.disabled = true;
-  } else {
-    cartBody.innerHTML = cart.map(line=>{
-      const opts = [line.size!=='Regular'?line.size:null, line.spice!=='Mild'?line.spice:null, ...line.addons].filter(Boolean).join(' · ');
-      return `
-      <div class="cart-line" data-line="${line.lineId}">
-        <div class="item-badge">${line.icon}</div>
-        <div class="cart-line-info">
-          <div class="name">${line.name}</div>
-          ${opts ? `<div class="opts">${opts}</div>` : ''}
-          <div class="qty-row">
-            <button class="qty-btn minus" data-line="${line.lineId}">−</button>
-            <span class="qty-val">${line.qty}</span>
-            <button class="qty-btn plus" data-line="${line.lineId}">+</button>
-            <a class="remove-link" data-line="${line.lineId}">Remove</a>
-          </div>
-        </div>
-        <div class="line-price">$${(line.unitPrice*line.qty).toFixed(2)}</div>
-      </div>`;
-    }).join('');
-    checkoutBtn.disabled = false;
-  }
-
-  const subtotal = cart.reduce((s,l)=> s + l.unitPrice*l.qty, 0);
-  const tax = subtotal * 0.08;
-  const total = subtotal + tax;
-  subtotalVal.textContent = `$${subtotal.toFixed(2)}`;
-  taxVal.textContent = `$${tax.toFixed(2)}`;
-  totalVal.textContent = `$${total.toFixed(2)}`;
-
-  cartBody.querySelectorAll('.qty-btn.plus').forEach(b=>b.addEventListener('click', ()=>changeQty(parseInt(b.dataset.line),1)));
-  cartBody.querySelectorAll('.qty-btn.minus').forEach(b=>b.addEventListener('click', ()=>changeQty(parseInt(b.dataset.line),-1)));
-  cartBody.querySelectorAll('.remove-link').forEach(b=>b.addEventListener('click', ()=>removeLine(parseInt(b.dataset.line))));
-}
-renderCart();
-
-/* =========================================================
-   DRAWER OPEN/CLOSE
-========================================================= */
-const overlay = document.getElementById('overlay');
-const cartDrawer = document.getElementById('cartDrawer');
-function openDrawer(){ cartDrawer.classList.add('show'); overlay.classList.add('show'); }
-function closeDrawer(){ cartDrawer.classList.remove('show'); overlay.classList.remove('show'); }
-document.getElementById('openCartBtn').addEventListener('click', openDrawer);
-document.getElementById('closeCartBtn').addEventListener('click', closeDrawer);
-overlay.addEventListener('click', ()=>{ closeDrawer(); closeConfirmModal(); });
-
-/* =========================================================
-   CHECKOUT / CONFIRMATION TICKET
-========================================================= */
-const confirmModal = document.getElementById('confirmModal');
-const confirmModalCard = document.getElementById('confirmModalCard');
-
-checkoutBtn.addEventListener('click', ()=>{
-  if(cart.length === 0) return;
-  const subtotal = cart.reduce((s,l)=> s + l.unitPrice*l.qty, 0);
-  const tax = subtotal * 0.08;
-  const total = subtotal + tax;
-  const orderNum = 'CB-' + Math.floor(1000 + Math.random()*9000);
-  const eta = 8 + Math.floor(Math.random()*7);
-
-  confirmModalCard.innerHTML = `
-    <button class="modal-close" aria-label="Close">×</button>
-    <div class="ticket">
-      <div class="ticket-head">
-        <div class="brand">CHARBURN</div>
-        <div class="ticket-num">ORDER #${orderNum}</div>
-      </div>
-      ${cart.map(l=>`<div class="ticket-row"><span>${l.qty}× ${l.name}</span><span>$${(l.unitPrice*l.qty).toFixed(2)}</span></div>`).join('')}
-      <div class="ticket-row" style="margin-top:10px;"><span>Subtotal</span><span>$${subtotal.toFixed(2)}</span></div>
-      <div class="ticket-row"><span>Tax</span><span>$${tax.toFixed(2)}</span></div>
-      <div class="ticket-total"><span>Total</span><span>$${total.toFixed(2)}</span></div>
-      <div class="ticket-eta">
-        Fired up and ready in about
-        <b>${eta} min</b>
-      </div>
-    </div>
-    <button class="btn btn-primary" style="width:100%;margin-top:20px;" id="newOrderBtn">Start a New Order</button>
-  `;
-  confirmModalCard.querySelector('.modal-close').addEventListener('click', ()=>{
-    closeConfirmModal();
-  });
-  confirmModalCard.querySelector('#newOrderBtn').addEventListener('click', ()=>{
-    cart = [];
-    renderCart();
-    closeConfirmModal();
-    closeDrawer();
-    showToast('New order started');
-  });
-  closeDrawer();
-  confirmModal.classList.add('show');
-});
-function closeConfirmModal(){ confirmModal.classList.remove('show'); }
-confirmModal.addEventListener('click', (e)=>{ if(e.target === confirmModal) closeConfirmModal(); });
-
-/* =========================================================
-   LOCATIONS
-========================================================= */
-const locGrid = document.getElementById('locGrid');
-function renderLocations(list){
-  locGrid.innerHTML = list.map(l=>`
-    <div class="loc-card">
-      <h4>${l.city}</h4>
-      <div class="addr">${l.addr}</div>
-      <div class="loc-meta">
-        <span>${l.hours}</span>
-        <span class="${l.status==='Open now'?'loc-open':''}">${l.status}</span>
-      </div>
-    </div>
-  `).join('') || `<p style="color:var(--smoke);">No locations found for that search.</p>`;
-}
-renderLocations(LOCATIONS);
-
-function doLocSearch(){
-  const q = document.getElementById('locSearch').value.trim().toLowerCase();
-  if(!q){ renderLocations(LOCATIONS); return; }
-  renderLocations(LOCATIONS.filter(l=> l.city.toLowerCase().includes(q)));
-}
-document.getElementById('locSearchBtn').addEventListener('click', doLocSearch);
-document.getElementById('locSearch').addEventListener('keydown', (e)=>{ if(e.key==='Enter') doLocSearch(); });
-
-/* =========================================================
-   APP PROMO BUTTONS (demo-only)
-========================================================= */
-document.getElementById('appStoreBtn').addEventListener('click', (e)=>{ e.preventDefault(); showToast('App Store link goes here'); });
-document.getElementById('playStoreBtn').addEventListener('click', (e)=>{ e.preventDefault(); showToast('Google Play link goes here'); });
-
-/* =========================================================
-   ESC to close overlays
-========================================================= */
-document.addEventListener('keydown', (e)=>{
-  if(e.key === 'Escape'){
-    closeDrawer();
-    closeItemModal();
-    closeConfirmModal();
-  }
-});
 </script>
+
 </body>
 </html>
