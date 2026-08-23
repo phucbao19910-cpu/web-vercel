@@ -2,31 +2,38 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Python Runner (Real or Simulated)</title>
-    <!-- Try to load Pyodide (Real Python) -->
+    <title>Python Runner (VS Code Style)</title>
     <script src="https://cdn.jsdelivr.net/pyodide/v0.26.1/full/pyodide.js"></script>
     <style>
-        :root { --bg: #f4f4f9; --editor: #282c34; --out: #1e1e1e; --accent: #007bff; }
-        body { font-family: system-ui, sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background: var(--bg); }
-        header { background: white; padding: 1rem; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
-        h1 { margin: 0; font-size: 1.2rem; color: #333; }
-        .status { font-size: 0.8rem; padding: 4px 8px; border-radius: 4px; background: #eee; }
-        .status.ready { background: #d4edda; color: #155724; }
-        .status.sim { background: #fff3cd; color: #856404; }
-        .btn { background: var(--accent); color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .btn:disabled { background: #ccc; cursor: not-allowed; }
-        .container { display: flex; flex: 1; padding: 1rem; gap: 1rem; }
-        .panel { flex: 1; display: flex; flex-direction: column; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; }
-        .label { background: #eee; padding: 8px; font-size: 0.8rem; font-weight: bold; color: #555; text-transform: uppercase; }
-        textarea { flex: 1; border: none; padding: 1rem; font-family: 'Consolas', monospace; background: var(--editor); color: #abb2bf; resize: none; outline: none; }
-        #output { flex: 1; padding: 1rem; font-family: 'Consolas', monospace; background: var(--out); color: #e5e5e5; overflow-y: auto; white-space: pre-wrap; }
-        .error { color: #ff4d4d; }
+        :root { --bg: #1e1e1e; --editor: #282c34; --out: #1e1e1e; --accent: #007bff; --text: #d4d4d4; --input-line: #3c3c3c; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background: #121212; color: var(--text); }
+        header { background: #252526; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
+        h1 { margin: 0; font-size: 1.1rem; color: #fff; }
+        .status { font-size: 0.8rem; padding: 4px 8px; border-radius: 4px; background: #333; color: #aaa; }
+        .status.ready { background: #2d5632; color: #fff; }
+        .status.sim { background: #5a4a00; color: #fff; }
+        .btn { background: var(--accent); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
+        .btn:disabled { background: #444; cursor: not-allowed; }
+        .container { display: flex; flex: 1; }
+        .editor-panel { flex: 1; display: flex; flex-direction: column; border-right: 1px solid #333; }
+        .output-panel { flex: 1; display: flex; flex-direction: column; background: var(--out); }
+        .label { background: #2d2d2d; padding: 8px; font-size: 0.8rem; font-weight: bold; color: #999; text-transform: uppercase; border-bottom: 1px solid #333; }
+        textarea#code-editor { flex: 1; border: none; padding: 15px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.95rem; background: var(--editor); color: #d4d4d4; resize: none; outline: none; line-height: 1.5; }
+        #output { flex: 1; padding: 15px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.95rem; overflow-y: auto; color: #d4d4d4; white-space: pre-wrap; }
+        .error { color: #f48771; }
+        
+        /* Custom Input UI for VS Code Style */
+        #custom-input-container { display: none; position: absolute; bottom: 0; left: 0; right: 0; background: var(--input-line); padding: 10px; border-top: 1px solid #444; }
+        #custom-input-label { color: #9cdcfe; font-family: 'Consolas', monospace; margin-right: 10px; display: inline-block; }
+        #custom-input-field { flex: 1; background: #1e1e1e; border: 1px solid #444; color: #fff; padding: 5px; font-family: 'Consolas', monospace; outline: none; }
+        #custom-input-submit { background: #0e639c; color: white; border: none; padding: 5px 10px; cursor: pointer; margin-left: 10px; }
+        #custom-input-submit:hover { background: #1177bb; }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>Python Runner</h1>
+    <h1>Python Runner (VS Code Style)</h1>
     <div style="display: flex; gap: 10px; align-items: center;">
         <span id="status" class="status">Loading...</span>
         <button id="runBtn" class="btn" disabled>▶ Run</button>
@@ -34,49 +41,115 @@
 </header>
 
 <div class="container">
-    <div class="panel">
+    <div class="editor-panel">
         <div class="label">Python Code</div>
-        <textarea id="code" spellcheck="false"># Try real Python commands:
-import math
+        <textarea id="code-editor" spellcheck="false">import math
 import random
 
+# --- Part 1: Personal Greeting ---
 name = input("What is your name? ")
 age = int(input("How old are you? "))
 
 print(f"Hello {name}!")
 print(f"Next year you will be {age + 1}.")
+
+# --- Part 2: Calculator Functions ---
+def add(x, y):
+    return x + y
+
+def subtract(x, y):
+    return x - y
+
+def multiply(x, y):
+    return x * y
+
+def divide(x, y):
+    return x / y
+
+# --- Part 3: Calculator Loop ---
+print("\nSelect operation.")
+print("1. Add")
+print("2. Subtract")
+print("3. Multiply")
+print("4. Divide")
+
+while True:
+    choice = input("Enter choice(1/2/3/4): ")
+
+    if choice in ('1', '2', '3', '4'):
+        try:
+            num1 = float(input("Enter first number: "))
+            num2 = float(input("Enter second number: "))
+        except ValueError:
+            print("Invalid input. Please enter a number.")
+            continue
+
+        if choice == '1':
+            print(num1, "+", num2, "=", add(num1, num2))
+        elif choice == '2':
+            print(num1, "-", num2, "=", subtract(num1, num2))
+        elif choice == '3':
+            print(num1, "*", num2, "=", multiply(num1, num2))
+        elif choice == '4':
+            print(num1, "/", num2, "=", divide(num1, num2))
+        
+        next_calculation = input("Let's do next calculation? (yes/no): ")
+        if next_calculation == "no":
+          break
+    else:
+        print("Invalid Input")
+
 print(f"Square root of 16: {math.sqrt(16)}")
 print(f"Random number: {random.randint(1, 100)}")
 </textarea>
     </div>
-    <div class="panel">
+    <div class="output-panel">
         <div class="label">Console Output</div>
         <div id="output"></div>
+        
+        <!-- Custom Input UI -->
+        <div id="custom-input-container">
+            <span id="custom-input-label">$</span>
+            <input type="text" id="custom-input-field" autocomplete="off">
+            <button id="custom-input-submit">Run</button>
+        </div>
     </div>
 </div>
 
 <script>
-    const codeEl = document.getElementById('code');
+    const codeEl = document.getElementById('code-editor');
     const outEl = document.getElementById('output');
     const runBtn = document.getElementById('runBtn');
     const statusEl = document.getElementById('status');
     
+    // Custom Input UI Elements
+    const customInputContainer = document.getElementById('custom-input-container');
+    const customInputField = document.getElementById('custom-input-field');
+    const customInputSubmit = document.getElementById('custom-input-submit');
+    const customInputLabel = document.getElementById('custom-input-label');
+    
     let pyodide = null;
-    let mode = 'sim'; // 'pyodide' or 'sim'
+    let mode = 'sim';
+    let pendingInput = null; // Stores the prompt text for the next input()
+    let inputResolver = null; // Function to resolve the input promise
 
-    // --- 1. Try to load Real Python (Pyodide) ---
+    // --- 1. Load Pyodide ---
     async function initPyodide() {
         try {
             if (typeof loadPyodide === 'undefined') throw new Error("Script not loaded");
             pyodide = await loadPyodide();
             
-            // Override input() to use browser prompt
+            // Override Python's input() to use our custom UI
             await pyodide.runPythonAsync(`
                 import js
-                def input(prompt=""):
-                    return js.prompt(prompt) or ""
+                # We'll use a special function to signal input needed
+                def js_input(prompt=""):
+                    # Send the prompt to the JS side
+                    js.requestInput(prompt)
+                    # Wait for the promise to resolve
+                    return js.inputPromise
             `);
-            
+
             pyodide.setStdout({ batched: (m) => outEl.innerHTML += m + "\n" });
             pyodide.setStderr({ batched: (m) => outEl.innerHTML += `<span class="error">${m}</span>\n` });
             
@@ -84,6 +157,14 @@ print(f"Random number: {random.randint(1, 100)}")
             statusEl.textContent = "Ready (Real Python)";
             statusEl.className = "status ready";
             runBtn.disabled = false;
+            
+            // Expose the input function to Python
+            await pyodide.runPythonAsync(`
+                # This function is called by the Python code when input() is needed
+                def request_input(prompt):
+                    # We'll handle this via the JS event system below
+                    pass
+            `);
             return true;
         } catch (e) {
             console.warn("Pyodide failed:", e);
@@ -91,92 +172,95 @@ print(f"Random number: {random.randint(1, 100)}")
         }
     }
 
-    // --- 2. Fallback Simulation (If Pyodide fails) ---
-    function runSimulation() {
-        const code = codeEl.value;
-        const lines = code.split('\n');
-        let output = [];
-        let variables = {};
+    // --- 2. Event Handlers for Custom Input ---
+    
+    // When Python calls the special input function
+    window.requestInput = function(prompt) {
+        // Show the custom input UI
+        customInputContainer.style.display = 'flex';
+        customInputLabel.textContent = prompt || "$";
+        customInputField.value = '';
+        customInputField.focus();
         
-        try {
-            for (let line of lines) {
-                line = line.trim();
-                if (!line || line.startsWith('#')) continue;
+        // Create a promise that resolves when the user hits Enter
+        pendingInput = prompt;
+        inputResolver = null;
+        
+        // We need to wrap the user input in a way Python can read
+        // We'll set a global variable that Python can check
+        // But the cleanest way is to use a promise that we resolve later
+        return new Promise((resolve) => {
+            inputResolver = resolve;
+        });
+    };
 
-                // Handle input()
-                if (line.match(/.*=\s*int\s*\(\s*input\s*\(/)) {
-                    const promptMatch = line.match(/input\s*\(\s*['"](.*)['"]\s*\)/);
-                    const promptText = promptMatch ? promptMatch[1] : "";
-                    const varMatch = line.match(/^(\w+)\s*=/);
-                    const varName = varMatch ? varMatch[1] : "unknown";
-                    
-                    const val = prompt(promptText);
-                    if (val === null) throw new Error("User cancelled");
-                    const num = parseInt(val);
-                    if (isNaN(num)) throw new Error(`ValueError: invalid literal for int() with base 10: '${val}'`);
-                    variables[varName] = num;
-                    continue;
-                }
-
-                // Handle print()
-                if (line.startsWith('print(')) {
-                    let content = line.slice(6, -1); // remove print( and )
-                    // Simple string handling
-                    if ((content.startsWith("'") && content.includes("'")) || (content.startsWith('"') && content.includes('"'))) {
-                        let q = content[0];
-                        let txt = content.slice(1, content.lastIndexOf(q));
-                        // Replace {var}
-                        txt = txt.replace(/\{(\w+)\}/g, (_, v) => variables[v] !== undefined ? variables[v] : `{${v}}`);
-                        output.push(txt);
-                    } else {
-                        // Multiple args
-                        let args = content.split(',').map(a => a.trim());
-                        let res = args.map(a => {
-                            if (variables[a] !== undefined) return variables[a];
-                            if ((a[0]==='"' || a[0]==="'") && a.slice(-1)===a[0]) return a.slice(1, -1);
-                            return a;
-                        }).join(' ');
-                        output.push(res);
-                    }
-                    continue;
-                }
-
-                // Handle simple assignment: x = 5
-                if (line.includes('=')) {
-                    let [k, v] = line.split('=').map(s => s.trim());
-                    if (!isNaN(v)) variables[k] = Number(v);
-                }
-            }
-            outEl.innerHTML = output.join('\n') + '\n';
-        } catch (e) {
-            outEl.innerHTML = `<span class="error">${e.message}</span>\n`;
-        }
-    }
-
-    // --- Initialization ---
-    async function init() {
-        const success = await initPyodide();
-        if (!success) {
-            mode = 'sim';
-            statusEl.textContent = "Running (Simulation Mode)";
-            statusEl.className = "status sim";
-            runBtn.disabled = false;
-            outEl.innerHTML = "<span style='color:orange'>Note: Real Python blocked. Running in simulation mode.</span>\n";
-        }
-    }
-
-    init();
-
-    runBtn.addEventListener('click', () => {
-        outEl.innerHTML = '';
-        if (mode === 'pyodide') {
-            pyodide.runPythonAsync(codeEl.value).catch(e => {
-                outEl.innerHTML += `<span class="error">${e}</span>\n`;
-            });
-        } else {
-            runSimulation();
+    // Handle user typing and pressing Enter
+    customInputField.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            const value = customInputField.value;
+            resolveInput(value);
         }
     });
+
+    customInputSubmit.addEventListener('click', () => {
+        const value = customInputField.value;
+        resolveInput(value);
+    });
+
+    function resolveInput(value) {
+        if (inputResolver) {
+            inputResolver(value);
+            // Hide UI
+            customInputContainer.style.display = 'none';
+            inputResolver = null;
+            pendingInput = null;
+        }
+    }
+
+    // --- 3. Run Code ---
+    async function runCode() {
+        outEl.innerHTML = '';
+        runBtn.disabled = true;
+        runBtn.textContent = "Running...";
+        
+        try {
+            if (mode === 'pyodide') {
+                // We need to patch the input function in the Python environment
+                // The previous patch might have been too complex, let's try a simpler override
+                await pyodide.runPythonAsync(`
+                    import js
+                    # Replace input with our custom function
+                    def new_input(prompt=""):
+                        # Call the JS function which returns a promise
+                        promise = js.request_input(prompt)
+                        # Wait for the promise
+                        return promise
+                    input = new_input
+                `);
+                
+                await pyodide.runPythonAsync(codeEl.value);
+            } else {
+                // Fallback simulation (not used if Pyodide loads)
+                outEl.innerHTML = "Simulation mode not implemented for VS Code style.";
+            }
+        } catch (err) {
+            outEl.innerHTML += `<span class="error">${err}</span>\n`;
+        } finally {
+            runBtn.disabled = false;
+            runBtn.textContent = "▶ Run";
+        }
+    }
+
+    // --- Init ---
+    initPyodide().then(success => {
+        if (!success) {
+            statusEl.textContent = "Error (Simulation not available)";
+            statusEl.className = "status sim";
+        }
+    });
+
+    runBtn.addEventListener('click', runCode);
+
 </script>
 
 </body>
