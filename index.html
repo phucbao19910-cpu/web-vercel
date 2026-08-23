@@ -2,25 +2,74 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Fast Python Runner</title>
+    <title>PyBiz — Full Python Runner</title>
     <script src="https://cdn.jsdelivr.net/pyodide/v0.26.1/full/pyodide.js"></script>
     <style>
-        :root { --bg: #1e1e1e; --editor: #282c34; --out: #1e1e1e; --accent: #007bff; --text: #d4d4d4; --input-line: #3c3c3c; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background: #121212; color: var(--text); }
-        header { background: #252526; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
-        h1 { margin: 0; font-size: 1.1rem; color: #fff; }
-        .status { font-size: 0.8rem; padding: 4px 8px; border-radius: 4px; background: #333; color: #aaa; }
-        .status.ready { background: #2d5632; color: #fff; }
-        .status.error { background: #5c2323; color: #fff; }
-        .btn { background: var(--accent); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
-        .btn:disabled { background: #444; cursor: not-allowed; }
+        :root {
+            --bg: #121212;
+            --header-bg: #252526;
+            --panel-label-bg: #2d2d2d;
+            --editor-bg: #282c34;
+            --out-bg: #1e1e1e;
+            --border: #333;
+            --text: #d4d4d4;
+            --text-strong: #ffffff;
+            --text-muted: #999999;
+            --status-bg: #333333;
+            --status-text: #aaaaaa;
+            --status-ready-bg: #2d5632;
+            --status-error-bg: #5c2323;
+            --input-bar-bg: #252526;
+            --input-bar-border: #444444;
+            --disabled-bg: #444444;
+            --accent: #007bff;
+            --accent-contrast: #ffffff;
+            --error-color: #f48771;
+            --prompt-color: #4ec9b0;
+        }
+        html[data-theme="light"] {
+            --bg: #f5f5f7;
+            --header-bg: #ffffff;
+            --panel-label-bg: #eeeeee;
+            --editor-bg: #ffffff;
+            --out-bg: #ffffff;
+            --border: #dddddd;
+            --text: #1e1e1e;
+            --text-strong: #000000;
+            --text-muted: #666666;
+            --status-bg: #e6e6e6;
+            --status-text: #444444;
+            --status-ready-bg: #d4f0dc;
+            --status-error-bg: #fbdada;
+            --input-bar-bg: #f0f0f0;
+            --input-bar-border: #cccccc;
+            --disabled-bg: #cccccc;
+            --accent-contrast: #ffffff;
+            --error-color: #c0392b;
+            --prompt-color: #0a7a5f;
+        }
+        html[data-theme="light"] .status.ready { color: #1c5c33; }
+        html[data-theme="light"] .status.error { color: #7a1f1f; }
+
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background: var(--bg); color: var(--text); transition: background 0.15s ease, color 0.15s ease; }
+        header { background: var(--header-bg); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+        h1 { margin: 0; font-size: 1.1rem; color: var(--text-strong); }
+        .status { font-size: 0.8rem; padding: 4px 8px; border-radius: 4px; background: var(--status-bg); color: var(--status-text); }
+        .status.ready { background: var(--status-ready-bg); color: var(--text-strong); }
+        .status.error { background: var(--status-error-bg); color: var(--text-strong); }
+        .btn { background: var(--accent); color: var(--accent-contrast); border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
+        .btn:disabled { background: var(--disabled-bg); cursor: not-allowed; }
+        .icon-btn { background: transparent; border: 1px solid var(--border); color: var(--text); border-radius: 4px; padding: 5px 8px; cursor: pointer; font-size: 0.95rem; line-height: 1; }
+        .icon-btn:hover { border-color: var(--accent); }
+        #accent-picker { width: 28px; height: 28px; padding: 0; border: 1px solid var(--border); border-radius: 4px; background: none; cursor: pointer; }
         .container { display: flex; flex: 1; min-height: 0; }
-        .editor-panel { flex: 1; display: flex; flex-direction: column; border-right: 1px solid #333; }
-        .output-panel { flex: 1; display: flex; flex-direction: column; background: var(--out); position: relative; min-height: 0; }
-        .label { background: #2d2d2d; padding: 8px; font-size: 0.8rem; font-weight: bold; color: #999; text-transform: uppercase; border-bottom: 1px solid #333; }
-        textarea#code-editor { flex: 1; border: none; padding: 15px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.95rem; background: var(--editor); color: #d4d4d4; resize: none; outline: none; line-height: 1.5; }
-        #output { flex: 1; padding: 15px; padding-bottom: 50px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.95rem; overflow-y: auto; color: #d4d4d4; white-space: pre-wrap; word-break: break-word; }
-        .error { color: #f48771; }
+        .editor-panel { flex: 1; display: flex; flex-direction: column; border-right: 1px solid var(--border); }
+        .output-panel { flex: 1; display: flex; flex-direction: column; background: var(--out-bg); position: relative; min-height: 0; }
+        .label { background: var(--panel-label-bg); padding: 8px; font-size: 0.8rem; font-weight: bold; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid var(--border); }
+        textarea#code-editor { flex: 1; border: none; padding: 15px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.95rem; background: var(--editor-bg); color: var(--text); resize: none; outline: none; line-height: 1.5; }
+        #output { flex: 1; padding: 15px; padding-bottom: 50px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.95rem; overflow-y: auto; color: var(--text); white-space: pre-wrap; word-break: break-word; }
+        .error { color: var(--error-color); }
 
         /* Fast Input UI */
         #input-bar {
@@ -29,17 +78,17 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: #252526;
+            background: var(--input-bar-bg);
             padding: 10px 15px;
-            border-top: 1px solid #444;
+            border-top: 1px solid var(--input-bar-border);
             z-index: 100;
             align-items: center;
         }
-        #prompt-text { color: #4ec9b0; font-family: 'Consolas', monospace; margin-right: 10px; white-space: nowrap; }
+        #prompt-text { color: var(--prompt-color); font-family: 'Consolas', monospace; margin-right: 10px; white-space: nowrap; }
         #user-input {
             background: transparent;
             border: none;
-            color: #fff;
+            color: var(--text);
             font-family: 'Consolas', monospace;
             font-size: 1rem;
             flex: 1;
@@ -50,8 +99,12 @@
 <body>
 
 <header>
-    <h1>Fast Python Runner</h1>
+    <h1>PyBiz <span style="font-weight:400; color: var(--text-muted); font-size: 0.85rem;">Full Python Runner</span></h1>
     <div style="display: flex; gap: 10px; align-items: center;">
+        <span id="offline-status" class="status" style="display:none;">Offline ready</span>
+        <input type="color" id="accent-picker" title="Accent color" value="#007bff">
+        <button id="theme-toggle" class="icon-btn" title="Toggle light/dark theme">🌙</button>
+        <span id="save-status" class="status" style="display:none;">Saved</span>
         <span id="status" class="status">Loading...</span>
         <button id="runBtn" class="btn" disabled>▶ Run</button>
     </div>
@@ -79,10 +132,13 @@
     const outEl = document.getElementById('output');
     const runBtn = document.getElementById('runBtn');
     const statusEl = document.getElementById('status');
+    const saveStatusEl = document.getElementById('save-status');
 
     const inputBar = document.getElementById('input-bar');
     const promptText = document.getElementById('prompt-text');
     const userInput = document.getElementById('user-input');
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const accentPicker = document.getElementById('accent-picker');
 
     let pyodide = null;
     let inputCallback = null; // Function to call when input is ready
@@ -107,6 +163,185 @@
         // the message when possible, but fall back to the full text.
         const text = (err && err.message) ? err.message : String(err);
         return text;
+    }
+
+    // --- Save / restore progress (persists your code across visits) ---
+    const CODE_STORAGE_KEY = 'fast-python-runner:code';
+    const hasStorage = typeof window !== 'undefined' && !!window.storage;
+    let saveTimer = null;
+    let saveIndicatorTimer = null;
+
+    function flashSaveStatus(text, isErr) {
+        if (!saveStatusEl) return;
+        saveStatusEl.textContent = text;
+        saveStatusEl.className = 'status' + (isErr ? ' error' : ' ready');
+        saveStatusEl.style.display = 'inline-block';
+        clearTimeout(saveIndicatorTimer);
+        saveIndicatorTimer = setTimeout(() => { saveStatusEl.style.display = 'none'; }, 1500);
+    }
+
+    async function saveProgress() {
+        if (!hasStorage) return;
+        try {
+            await window.storage.set(CODE_STORAGE_KEY, codeEl.value, false);
+            flashSaveStatus('Saved', false);
+        } catch (e) {
+            console.error('Save failed:', e);
+            flashSaveStatus('Save failed', true);
+        }
+    }
+
+    async function loadProgress() {
+        if (!hasStorage) return;
+        try {
+            const result = await window.storage.get(CODE_STORAGE_KEY, false);
+            if (result && typeof result.value === 'string' && result.value.length > 0) {
+                codeEl.value = result.value;
+            }
+        } catch (e) {
+            // No saved progress yet (or storage unavailable) - nothing to restore.
+        }
+    }
+
+    function scheduleSave() {
+        if (!hasStorage) return;
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(saveProgress, 600);
+    }
+
+    codeEl.addEventListener('input', scheduleSave);
+    // Also save immediately if the user navigates away / closes the tab.
+    window.addEventListener('beforeunload', () => {
+        if (hasStorage) {
+            clearTimeout(saveTimer);
+            // Fire-and-forget; beforeunload can't reliably await.
+            window.storage.set(CODE_STORAGE_KEY, codeEl.value, false).catch(() => {});
+        }
+    });
+
+    // --- Theme + accent color (persisted alongside code) ---
+    const SETTINGS_STORAGE_KEY = 'fast-python-runner:settings';
+    const DEFAULT_ACCENT = '#007bff';
+    let currentTheme = 'dark';
+    let currentAccent = DEFAULT_ACCENT;
+    let settingsSaveTimer = null;
+
+    function applyTheme(theme) {
+        currentTheme = theme === 'light' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        themeToggleBtn.textContent = currentTheme === 'light' ? '☀️' : '🌙';
+        themeToggleBtn.title = currentTheme === 'light' ? 'Switch to dark theme' : 'Switch to light theme';
+    }
+
+    function applyAccent(color) {
+        if (!color) return;
+        currentAccent = color;
+        document.documentElement.style.setProperty('--accent', color);
+        accentPicker.value = color;
+    }
+
+    function scheduleSettingsSave() {
+        if (!hasStorage) return;
+        clearTimeout(settingsSaveTimer);
+        settingsSaveTimer = setTimeout(async () => {
+            try {
+                await window.storage.set(
+                    SETTINGS_STORAGE_KEY,
+                    JSON.stringify({ theme: currentTheme, accent: currentAccent }),
+                    false
+                );
+            } catch (e) {
+                console.error('Settings save failed:', e);
+            }
+        }, 300);
+    }
+
+    async function loadSettings() {
+        // Fall back to the system preference until (or unless) we load saved settings.
+        const prefersLight = typeof window.matchMedia === 'function' &&
+            window.matchMedia('(prefers-color-scheme: light)').matches;
+        applyTheme(prefersLight ? 'light' : 'dark');
+        applyAccent(DEFAULT_ACCENT);
+
+        if (!hasStorage) return;
+        try {
+            const result = await window.storage.get(SETTINGS_STORAGE_KEY, false);
+            if (result && typeof result.value === 'string') {
+                const parsed = JSON.parse(result.value);
+                if (parsed && typeof parsed === 'object') {
+                    if (parsed.theme) applyTheme(parsed.theme);
+                    if (parsed.accent) applyAccent(parsed.accent);
+                }
+            }
+        } catch (e) {
+            // No saved settings yet - defaults above stay in effect.
+        }
+    }
+
+    themeToggleBtn.addEventListener('click', () => {
+        applyTheme(currentTheme === 'light' ? 'dark' : 'light');
+        scheduleSettingsSave();
+    });
+
+    accentPicker.addEventListener('input', () => {
+        applyAccent(accentPicker.value);
+        scheduleSettingsSave();
+    });
+
+    // --- Offline support ---
+    // Pyodide itself is a multi-megabyte WebAssembly engine that has to be
+    // downloaded at least once - there's no way around that. What we *can*
+    // do is cache it the first time it loads successfully, so every run
+    // after that works with no wifi / no internet at all. We register a
+    // tiny service worker (built inline, as a Blob, so this stays a single
+    // self-contained file) that caches every Pyodide asset it sees and
+    // falls back to the cache whenever the network is unavailable.
+    const offlineStatusEl = document.getElementById('offline-status');
+    let offlineCachingActive = false;
+
+    async function setupOfflineCache() {
+        if (!('serviceWorker' in navigator)) return;
+        // Service workers require a real http(s) origin - they cannot be
+        // registered from a page opened directly as a local file (file://).
+        if (location.protocol === 'file:') return;
+        const swSource = `
+            const CACHE_NAME = 'pybiz-offline-v1';
+            self.addEventListener('install', (e) => self.skipWaiting());
+            self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
+            self.addEventListener('fetch', (event) => {
+                const req = event.request;
+                if (req.method !== 'GET') return;
+                // Only take over the Python engine's own assets; leave
+                // everything else (the page itself, etc.) alone.
+                if (!/pyodide/i.test(req.url)) return;
+                event.respondWith((async () => {
+                    const cache = await caches.open(CACHE_NAME);
+                    const cached = await cache.match(req);
+                    try {
+                        const fresh = await fetch(req);
+                        if (fresh && fresh.ok) cache.put(req, fresh.clone());
+                        return fresh;
+                    } catch (err) {
+                        if (cached) return cached;
+                        throw err;
+                    }
+                })());
+            });
+        `;
+        try {
+            const blobUrl = URL.createObjectURL(new Blob([swSource], { type: 'application/javascript' }));
+            await navigator.serviceWorker.register(blobUrl);
+            offlineCachingActive = true;
+        } catch (e) {
+            console.warn('Offline caching unavailable in this browser/context:', e);
+        }
+    }
+
+    function showOfflineReady() {
+        if (!offlineStatusEl) return;
+        offlineStatusEl.textContent = 'Offline ready';
+        offlineStatusEl.className = 'status ready';
+        offlineStatusEl.style.display = 'inline-block';
     }
 
     // --- 1. Load Pyodide ---
@@ -182,12 +417,22 @@ async def __run_user_code__(source):
             statusEl.textContent = "Ready";
             statusEl.className = "status ready";
             runBtn.disabled = false;
+            if (offlineCachingActive) showOfflineReady();
             return true;
         } catch (e) {
             console.error("Init failed:", e);
             statusEl.textContent = "Error";
             statusEl.className = "status error";
-            appendOutput("Failed to initialize Python runtime: " + formatError(e), true);
+            if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+                appendOutput(
+                    "You're offline, and PyBiz hasn't cached the Python engine on this device yet. " +
+                    "Connect to the internet once so it can download (about 10-15MB) - after that, " +
+                    "PyBiz will keep working with no wifi or internet at all.",
+                    true
+                );
+            } else {
+                appendOutput("Failed to initialize Python runtime: " + formatError(e), true);
+            }
             return false;
         }
     }
@@ -244,7 +489,8 @@ async def __run_user_code__(source):
     }
 
     // --- Init ---
-    initPyodide();
+    setupOfflineCache();
+    Promise.all([loadSettings(), loadProgress()]).finally(initPyodide);
     runBtn.addEventListener('click', runCode);
 
 </script>
