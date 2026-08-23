@@ -16,16 +16,35 @@
         .btn:disabled { background: #444; cursor: not-allowed; }
         .container { display: flex; flex: 1; }
         .editor-panel { flex: 1; display: flex; flex-direction: column; border-right: 1px solid #333; }
-        .output-panel { flex: 1; display: flex; flex-direction: column; background: var(--out); }
+        .output-panel { flex: 1; display: flex; flex-direction: column; background: var(--out); position: relative; }
         .label { background: #2d2d2d; padding: 8px; font-size: 0.8rem; font-weight: bold; color: #999; text-transform: uppercase; border-bottom: 1px solid #333; }
         textarea#code-editor { flex: 1; border: none; padding: 15px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.95rem; background: var(--editor); color: #d4d4d4; resize: none; outline: none; line-height: 1.5; }
         #output { flex: 1; padding: 15px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.95rem; overflow-y: auto; color: #d4d4d4; white-space: pre-wrap; }
         .error { color: #f48771; }
         
-        /* Custom Input UI for VS Code Style */
-        #custom-input-container { display: none; position: absolute; bottom: 0; left: 0; right: 0; background: var(--input-line); padding: 10px; border-top: 1px solid #444; }
+        /* Custom Input UI */
+        #custom-input-container { 
+            display: none; 
+            position: absolute; 
+            bottom: 0; 
+            left: 0; 
+            right: 0; 
+            background: var(--input-line); 
+            padding: 10px; 
+            border-top: 1px solid #444; 
+            z-index: 100;
+        }
         #custom-input-label { color: #9cdcfe; font-family: 'Consolas', monospace; margin-right: 10px; display: inline-block; }
-        #custom-input-field { flex: 1; background: #1e1e1e; border: 1px solid #444; color: #fff; padding: 5px; font-family: 'Consolas', monospace; outline: none; }
+        #custom-input-field { 
+            flex: 1; 
+            background: #1e1e1e; 
+            border: 1px solid #444; 
+            color: #fff; 
+            padding: 5px; 
+            font-family: 'Consolas', monospace; 
+            outline: none; 
+            width: 100%;
+        }
         #custom-input-submit { background: #0e639c; color: white; border: none; padding: 5px 10px; cursor: pointer; margin-left: 10px; }
         #custom-input-submit:hover { background: #1177bb; }
     </style>
@@ -129,9 +148,8 @@ print(f"Random number: {random.randint(1, 100)}")
     const customInputLabel = document.getElementById('custom-input-label');
     
     let pyodide = null;
-    let mode = 'sim';
-    let pendingInput = null; // Stores the prompt text for the next input()
-    let inputResolver = null; // Function to resolve the input promise
+    let mode = 'pyodide';
+    let inputResolver = null;
 
     // --- 1. Load Pyodide ---
     async function initPyodide() {
@@ -139,62 +157,49 @@ print(f"Random number: {random.randint(1, 100)}")
             if (typeof loadPyodide === 'undefined') throw new Error("Script not loaded");
             pyodide = await loadPyodide();
             
-            // Override Python's input() to use our custom UI
+            // Expose a JS function to Python that returns a Promise
+            // This is the key fix: we expose the function BEFORE defining input in Python
+            pyodide.globals.set('js_request_input', (prompt) => {
+                return new Promise((resolve) => {
+                    // Show UI
+                    customInputContainer.style.display = 'flex';
+                    customInputLabel.textContent = prompt || "$";
+                    customInputField.value = '';
+                    customInputField.focus();
+                    
+                    // Store resolver
+                    inputResolver = resolve;
+                });
+            });
+
+            // Now define Python's input() to call the JS function
             await pyodide.runPythonAsync(`
                 import js
-                # We'll use a special function to signal input needed
-                def js_input(prompt=""):
-                    # Send the prompt to the JS side
-                    js.requestInput(prompt)
+                def custom_input(prompt=""):
+                    # Call the JS function which returns a Promise
+                    promise = js.js_request_input(prompt)
                     # Wait for the promise to resolve
-                    return js.inputPromise
+                    return promise
+                input = custom_input
             `);
 
             pyodide.setStdout({ batched: (m) => outEl.innerHTML += m + "\n" });
             pyodide.setStderr({ batched: (m) => outEl.innerHTML += `<span class="error">${m}</span>\n` });
             
-            mode = 'pyodide';
             statusEl.textContent = "Ready (Real Python)";
             statusEl.className = "status ready";
             runBtn.disabled = false;
-            
-            // Expose the input function to Python
-            await pyodide.runPythonAsync(`
-                # This function is called by the Python code when input() is needed
-                def request_input(prompt):
-                    # We'll handle this via the JS event system below
-                    pass
-            `);
             return true;
         } catch (e) {
             console.warn("Pyodide failed:", e);
+            statusEl.textContent = "Error";
+            statusEl.className = "status sim";
+            outEl.innerHTML = `<span class="error">Failed to load Pyodide: ${e.message}</span>`;
             return false;
         }
     }
 
     // --- 2. Event Handlers for Custom Input ---
-    
-    // When Python calls the special input function
-    window.requestInput = function(prompt) {
-        // Show the custom input UI
-        customInputContainer.style.display = 'flex';
-        customInputLabel.textContent = prompt || "$";
-        customInputField.value = '';
-        customInputField.focus();
-        
-        // Create a promise that resolves when the user hits Enter
-        pendingInput = prompt;
-        inputResolver = null;
-        
-        // We need to wrap the user input in a way Python can read
-        // We'll set a global variable that Python can check
-        // But the cleanest way is to use a promise that we resolve later
-        return new Promise((resolve) => {
-            inputResolver = resolve;
-        });
-    };
-
-    // Handle user typing and pressing Enter
     customInputField.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             const value = customInputField.value;
@@ -213,7 +218,8 @@ print(f"Random number: {random.randint(1, 100)}")
             // Hide UI
             customInputContainer.style.display = 'none';
             inputResolver = null;
-            pendingInput = null;
+            // Print the input to the console (optional, but looks like VS Code)
+            // outEl.innerHTML += value + "\n"; 
         }
     }
 
@@ -225,23 +231,7 @@ print(f"Random number: {random.randint(1, 100)}")
         
         try {
             if (mode === 'pyodide') {
-                // We need to patch the input function in the Python environment
-                // The previous patch might have been too complex, let's try a simpler override
-                await pyodide.runPythonAsync(`
-                    import js
-                    # Replace input with our custom function
-                    def new_input(prompt=""):
-                        # Call the JS function which returns a promise
-                        promise = js.request_input(prompt)
-                        # Wait for the promise
-                        return promise
-                    input = new_input
-                `);
-                
                 await pyodide.runPythonAsync(codeEl.value);
-            } else {
-                // Fallback simulation (not used if Pyodide loads)
-                outEl.innerHTML = "Simulation mode not implemented for VS Code style.";
             }
         } catch (err) {
             outEl.innerHTML += `<span class="error">${err}</span>\n`;
@@ -254,8 +244,7 @@ print(f"Random number: {random.randint(1, 100)}")
     // --- Init ---
     initPyodide().then(success => {
         if (!success) {
-            statusEl.textContent = "Error (Simulation not available)";
-            statusEl.className = "status sim";
+            // Fallback could go here if needed
         }
     });
 
