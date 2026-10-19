@@ -1,906 +1,528 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <title>PyBiz — Full Python Runner</title>
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.26.1/full/pyodide.js"></script>
-    <style>
-        :root {
-            --bg: #121212;
-            --header-bg: #252526;
-            --panel-label-bg: #2d2d2d;
-            --editor-bg: #282c34;
-            --out-bg: #1e1e1e;
-            --border: #333;
-            --text: #d4d4d4;
-            --text-strong: #ffffff;
-            --text-muted: #999999;
-            --status-bg: #333333;
-            --status-text: #aaaaaa;
-            --status-ready-bg: #2d5632;
-            --status-error-bg: #5c2323;
-            --input-bar-bg: #252526;
-            --input-bar-border: #444444;
-            --disabled-bg: #444444;
-            --accent: #007bff;
-            --accent-contrast: #ffffff;
-            --error-color: #f48771;
-            --prompt-color: #4ec9b0;
-        }
-        html[data-theme="light"] {
-            --bg: #f5f5f7;
-            --header-bg: #ffffff;
-            --panel-label-bg: #eeeeee;
-            --editor-bg: #ffffff;
-            --out-bg: #ffffff;
-            --border: #dddddd;
-            --text: #1e1e1e;
-            --text-strong: #000000;
-            --text-muted: #666666;
-            --status-bg: #e6e6e6;
-            --status-text: #444444;
-            --status-ready-bg: #d4f0dc;
-            --status-error-bg: #fbdada;
-            --input-bar-bg: #f0f0f0;
-            --input-bar-border: #cccccc;
-            --disabled-bg: #cccccc;
-            --accent-contrast: #ffffff;
-            --error-color: #c0392b;
-            --prompt-color: #0a7a5f;
-        }
-        html[data-theme="light"] .status.ready { color: #1c5c33; }
-        html[data-theme="light"] .status.error { color: #7a1f1f; }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gửi mẹ Mi — 20/10 💗</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&family=Pacifico&display=swap" rel="stylesheet">
+<style>
+  :root{--wine:#2a0e26;--plum:#5b1f4d;--rose:#ff7aa8;--gold:#f6c978;--paper:#fff6ec;--ink:#4a1f3d}
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;color:#ffe9f1;font-family:"Be Vietnam Pro","Segoe UI",system-ui,sans-serif;
+    background:linear-gradient(180deg,var(--wine) 0%,#3d1237 45%,var(--plum) 100%);overflow-x:hidden}
+  #sky{position:fixed;inset:0;z-index:0;pointer-events:none}
+  main{position:relative;z-index:1}
+  section{width:min(900px,92%);margin:0 auto}
+  .script{font-family:Pacifico,"Brush Script MT",cursive;font-weight:400}
 
-        * { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background: var(--bg); color: var(--text); transition: background 0.15s ease, color 0.15s ease; }
-        header { background: var(--header-bg); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); transition: padding 0.15s ease; }
-        header.collapsed { padding: 6px 20px; }
-        header.collapsed .collapsible { display: none !important; }
-        #minimize-toggle { font-size: 0.8rem; padding: 5px 10px; }
-        #save-btn, #export-btn, #projects-btn { white-space: nowrap; }
+  /* HERO */
+  .hero{min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 0 30px}
+  .bloom{width:min(300px,68vw);aspect-ratio:1;position:relative;filter:drop-shadow(0 0 40px #ff7aa866)}
+  .bloom svg{width:100%;height:100%;overflow:visible}
+  .pet{transform-origin:100px 100px;transform:rotate(var(--r)) scale(0);animation:open 1.4s cubic-bezier(.2,1.3,.4,1) forwards;animation-delay:calc(var(--i)*.12s + .3s)}
+  .pet.in{animation-delay:calc(var(--i)*.1s + 1.4s)}
+  @keyframes open{to{transform:rotate(var(--r)) scale(1)}}
+  .core{transform-origin:100px 100px;transform:scale(0);animation:open2 1s 2.2s cubic-bezier(.2,1.5,.4,1) forwards}
+  @keyframes open2{to{transform:scale(1)}}
+  .spin{transform-origin:100px 100px;animation:turn 60s linear infinite}
+  @keyframes turn{to{transform:rotate(360deg)}}
+  h1{margin:6px 0 10px;font-size:clamp(2.6rem,9vw,5.4rem);line-height:1.15;color:#fff;text-shadow:0 4px 30px #ff7aa880}
+  h1 .ch{display:inline-block;opacity:0;transform:translateY(40px) rotate(6deg);animation:rise .8s cubic-bezier(.2,1.2,.4,1) forwards;animation-delay:calc(2.4s + var(--i)*.06s)}
+  @keyframes rise{to{opacity:1;transform:none}}
+  .sub{max-width:560px;line-height:1.85;color:#f4cfe0;font-size:clamp(1rem,2.6vw,1.15rem);opacity:0;animation:fade 1s 3.6s forwards}
+  .cue{margin-top:26px;color:var(--gold);font-size:.95rem;opacity:0;animation:fade 1s 4.2s forwards,nudge 2s 5s ease-in-out infinite}
+  @keyframes fade{to{opacity:1}}
+  @keyframes nudge{50%{transform:translateY(8px)}}
 
-        #projects-panel {
-            display: none;
-            position: fixed;
-            top: 54px;
-            right: 20px;
-            width: 300px;
-            max-height: 400px;
-            overflow-y: auto;
-            background: var(--header-bg);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.35);
-            z-index: 300;
-        }
-        .projects-panel-header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 10px 12px; border-bottom: 1px solid var(--border);
-            font-size: 0.8rem; font-weight: bold; color: var(--text-muted); text-transform: uppercase;
-        }
-        #new-project-btn { font-size: 0.8rem; padding: 4px 8px; white-space: nowrap; }
-        .project-row {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 8px 12px; cursor: pointer; border-bottom: 1px solid var(--border);
-        }
-        .project-row:hover { background: var(--panel-label-bg); }
-        .project-row.active { border-left: 3px solid var(--accent); background: var(--panel-label-bg); }
-        .project-info { overflow: hidden; }
-        .project-name { font-size: 0.9rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 210px; }
-        .project-time { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
-        .project-delete { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.9rem; padding: 4px 6px; border-radius: 4px; flex-shrink: 0; }
-        .project-delete:hover { color: var(--error-color); }
-        .projects-empty { padding: 16px 12px; color: var(--text-muted); font-size: 0.85rem; text-align: center; }
-        h1 { margin: 0; font-size: 1.1rem; color: var(--text-strong); }
-        .status { font-size: 0.8rem; padding: 4px 8px; border-radius: 4px; background: var(--status-bg); color: var(--status-text); }
-        .status.ready { background: var(--status-ready-bg); color: var(--text-strong); }
-        .status.error { background: var(--status-error-bg); color: var(--text-strong); }
-        .btn { background: var(--accent); color: var(--accent-contrast); border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
-        .btn:disabled { background: var(--disabled-bg); cursor: not-allowed; }
-        .icon-btn { background: transparent; border: 1px solid var(--border); color: var(--text); border-radius: 4px; padding: 5px 8px; cursor: pointer; font-size: 0.95rem; line-height: 1; }
-        .icon-btn:hover { border-color: var(--accent); }
-        #accent-picker { width: 28px; height: 28px; padding: 0; border: 1px solid var(--border); border-radius: 4px; background: none; cursor: pointer; }
-        .container { display: flex; flex: 1; min-height: 0; }
-        .editor-panel { flex: 1; display: flex; flex-direction: column; border-right: 1px solid var(--border); }
-        .output-panel { flex: 1; display: flex; flex-direction: column; background: var(--out-bg); position: relative; min-height: 0; }
-        .label { background: var(--panel-label-bg); padding: 8px; font-size: 0.8rem; font-weight: bold; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid var(--border); }
-        textarea#code-editor { flex: 1; border: none; padding: 15px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.95rem; background: var(--editor-bg); color: var(--text); resize: none; outline: none; line-height: 1.5; }
-        #output { flex: 1; padding: 15px; padding-bottom: 50px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.95rem; overflow-y: auto; color: var(--text); white-space: pre-wrap; word-break: break-word; }
-        .error { color: var(--error-color); }
+  /* ENVELOPE */
+  .mail{padding:70px 0 40px;text-align:center}
+  h2{font-size:clamp(1.8rem,5vw,2.8rem);margin:0 0 10px;color:#fff;font-weight:400}
+  .hint{color:#e7b9cf;margin:0 0 34px}
+  .env{position:relative;width:min(340px,82vw);height:230px;margin:0 auto;cursor:pointer;border:0;background:none;padding:0;color:inherit;font:inherit;transition:transform .4s}
+  .env:hover{transform:scale(1.03) rotate(-1deg)}
+  .env:focus-visible{outline:3px solid var(--gold);outline-offset:8px;border-radius:12px}
+  .env .back{position:absolute;inset:0;background:#e0507f;border-radius:10px;box-shadow:0 20px 50px #0007}
+  .env .flap{position:absolute;left:0;right:0;top:0;height:60%;background:#f0689a;clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:top;transition:transform .7s .1s,z-index 0s .4s;z-index:4;border-radius:10px 10px 0 0}
+  .env .front{position:absolute;inset:0;z-index:3;background:linear-gradient(135deg,transparent 49.5%,#d0457a 50%) left/50% 100% no-repeat,linear-gradient(225deg,transparent 49.5%,#d0457a 50%) right/50% 100% no-repeat;border-radius:10px}
+  .env .seal{position:absolute;left:50%;top:50%;z-index:5;transform:translate(-50%,-50%);font-size:2.3rem;animation:beat 1.4s infinite;transition:opacity .3s}
+  @keyframes beat{50%{transform:translate(-50%,-50%) scale(1.25)}}
+  .env .note{position:absolute;left:8%;right:8%;top:10%;height:80%;z-index:2;background:var(--paper);border-radius:6px;transition:transform .8s .5s}
+  .env.open .flap{transform:rotateX(180deg);z-index:1}
+  .env.open .seal{opacity:0;animation:none}
+  .env.open .note{transform:translateY(-70px)}
+  .env.open{pointer-events:none;opacity:0;height:0;margin:0;transition:opacity .5s 1.5s,height 0s 2s}
 
-        /* Fast Input UI */
-        #input-bar {
-            display: none;
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--input-bar-bg);
-            padding: 10px 15px;
-            border-top: 1px solid var(--input-bar-border);
-            z-index: 100;
-            align-items: center;
-        }
-        #prompt-text { color: var(--prompt-color); font-family: 'Consolas', monospace; margin-right: 10px; white-space: nowrap; }
-        #user-input {
-            background: transparent;
-            border: none;
-            color: var(--text);
-            font-family: 'Consolas', monospace;
-            font-size: 1rem;
-            flex: 1;
-            outline: none;
-        }
-    </style>
+  .letter{max-width:680px;margin:0 auto;background:var(--paper);color:var(--ink);border-radius:6px 6px 24px 24px;padding:clamp(28px,6vw,52px);text-align:left;box-shadow:0 30px 80px #0008;
+    display:none;position:relative}
+  .letter::before{content:"";position:absolute;left:0;right:0;top:0;height:8px;background:repeating-linear-gradient(90deg,#ff7aa8 0 18px,#f6c978 18px 36px,#8fd3b6 36px 54px)}
+  .letter.show{display:block;animation:unfold 1s cubic-bezier(.2,.9,.3,1) both;transform-origin:top}
+  @keyframes unfold{from{opacity:0;transform:scaleY(.1)}to{opacity:1;transform:none}}
+  .letter h3{font-size:clamp(1.7rem,5vw,2.3rem);margin:6px 0 18px;color:#c2336b}
+  .letter p{line-height:1.95;font-size:1.05rem;margin:0 0 14px;opacity:0;transform:translateY(10px)}
+  .letter.show p,.letter.show .sig{animation:rise .7s forwards;animation-delay:calc(.9s + var(--i)*.55s)}
+  .sig{text-align:right;color:#c2336b;font-size:1.5rem;margin-top:22px;opacity:0;line-height:1.5}
+
+  /* GARDEN */
+  .garden-wrap{padding:70px 0 30px;text-align:center}
+  .counter{display:inline-flex;gap:10px;align-items:baseline;margin:6px 0 20px;color:var(--gold);font-size:1.1rem}
+  .counter b{font-size:2.4rem;color:#fff;font-family:Pacifico,cursive;font-weight:400;min-width:2ch;display:inline-block}
+  .garden{position:relative;height:min(420px,70vw);min-height:300px;border-radius:28px;overflow:hidden;cursor:cell;touch-action:manipulation;
+    background:radial-gradient(circle at 80% 18%,#ffe6a8 0 22px,#ffd27a55 23px 70px,transparent 71px),linear-gradient(180deg,#3a1a5c,#c2487a 62%,#f59a8a);
+    box-shadow:0 30px 70px #0007,inset 0 0 0 1px #ffffff22}
+  .garden::after{content:"";position:absolute;left:-10%;right:-10%;bottom:-40px;height:90px;border-radius:50% 50% 0 0;background:#1f5a49;box-shadow:0 -8px 0 #2d7a5f;pointer-events:none}
+  .garden .tip{position:absolute;inset:0;display:grid;place-items:center;color:#ffffffcc;pointer-events:none;transition:opacity .5s;padding:20px}
+  .garden.has .tip{opacity:0}
+  .fl{position:absolute;width:0;height:0}
+  .stem{position:absolute;left:-1.5px;top:0;width:3px;background:linear-gradient(#5cc08f,#2d7a5f);transform-origin:bottom;transform:scaleY(0);animation:grow .9s cubic-bezier(.3,.8,.3,1) forwards;border-radius:3px}
+  @keyframes grow{to{transform:scaleY(1)}}
+  .head{position:absolute;left:0;top:0;width:var(--s);height:var(--s);margin:calc(var(--s)/-2) 0 0 calc(var(--s)/-2);transform:scale(0) rotate(-90deg);animation:pop .8s .75s cubic-bezier(.2,1.6,.4,1) forwards}
+  .head svg{width:100%;height:100%;animation:sway 3.5s ease-in-out infinite alternate;transform-origin:50% 100%}
+  @keyframes pop{to{transform:scale(1) rotate(0)}}
+  @keyframes sway{from{transform:rotate(-6deg)}to{transform:rotate(6deg)}}
+  .actions{margin-top:22px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .btn{cursor:pointer;border:0;border-radius:99px;padding:13px 24px;font:inherit;font-weight:700;color:#fff;background:linear-gradient(135deg,#ff7aa8,#d63a7c);box-shadow:0 10px 28px #d63a7c55;transition:transform .2s}
+  .btn:hover{transform:translateY(-2px)}
+  .btn:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+  .btn.ghost{background:transparent;border:1.5px solid #ff7aa8aa;box-shadow:none;color:#ffd3e2}
+  .gift{max-width:640px;margin:34px auto 0;padding:34px 28px;border-radius:26px;background:#ffffff14;border:1px solid #ffffff30;line-height:1.9;font-size:1.1rem;display:none}
+  .gift.show{display:block;animation:unfold .9s both}
+  .gift .big{display:block;margin-top:14px;font-size:clamp(1.5rem,5vw,2.3rem);color:var(--gold)}
+  /* BẤT NGỜ MỚI */
+  .bloom{cursor:pointer}
+  .toast{position:fixed;left:50%;bottom:26px;z-index:20;transform:translate(-50%,30px);opacity:0;background:#fff6ec;color:var(--ink);padding:12px 22px;border-radius:99px;font-weight:700;box-shadow:0 12px 40px #0008;transition:.45s cubic-bezier(.2,1.4,.4,1);max-width:90vw;text-align:center;pointer-events:none}
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+  .snd{position:fixed;top:14px;right:14px;z-index:20;width:44px;height:44px;border-radius:50%;border:1px solid #ffffff33;background:#2a0e26aa;color:#fff;font-size:1.2rem;cursor:pointer;backdrop-filter:blur(6px)}
+  .snd:focus-visible{outline:3px solid var(--gold)}
+  .bsec,.scsec{padding:70px 0 10px;text-align:center}
+  .bsky{position:relative;height:290px;border-radius:28px;overflow:hidden;background:linear-gradient(180deg,#2c1458,#7a2c78 70%,#e0709a);box-shadow:0 30px 70px #0007,inset 0 0 0 1px #ffffff22}
+  .balloon{position:absolute;top:var(--t);left:var(--l);width:62px;height:78px;border:0;padding:0;border-radius:50% 50% 46% 46%;cursor:pointer;
+    background:radial-gradient(circle at 35% 28%,#ffffffaa,transparent 32%),var(--c);box-shadow:inset -6px -8px 14px #0003;animation:bob 3s ease-in-out infinite alternate;animation-delay:var(--d)}
+  .balloon::after{content:"";position:absolute;top:100%;left:50%;width:1.5px;height:60px;background:#ffffff77}
+  .balloon:focus-visible{outline:3px solid var(--gold);outline-offset:4px}
+  .balloon.pop{animation:boom .3s forwards;pointer-events:none}
+  @keyframes bob{from{transform:translateY(-9px) rotate(-5deg)}to{transform:translateY(9px) rotate(5deg)}}
+  @keyframes boom{50%{transform:scale(1.6)}to{transform:scale(2);opacity:0}}
+  .wish{min-height:92px;margin:22px auto 0;max-width:600px;font-size:1.15rem;line-height:1.8;color:#ffe3ee}
+  .wish span{display:inline-block;animation:rise .7s both}
+  .scratch{position:relative;width:min(420px,88vw);height:200px;margin:0 auto;border-radius:20px;overflow:hidden;box-shadow:0 24px 60px #0008}
+  .prize{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:20px;background:repeating-linear-gradient(45deg,#fff6ec 0 14px,#ffeadb 14px 28px);color:var(--ink);font-weight:700;font-size:1.15rem;line-height:1.5}
+  .prize small{color:#c2336b;font-size:.85rem;font-weight:500}
+  #scr{position:absolute;inset:0;touch-action:none;cursor:grab;transition:opacity .8s}
+  .sun{position:absolute;left:80%;top:18%;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;border:0;background:transparent;cursor:pointer;z-index:3}
+  /* v3 */
+  .name{font-size:clamp(1.7rem,6vw,2.7rem);margin:0 0 8px;background:linear-gradient(90deg,#ffd27a,#ff7aa8,#c77dff,#ffd27a);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;opacity:0;animation:shine 5s linear infinite,fade 1s 2s forwards;filter:drop-shadow(0 0 14px #ff7aa888)}
+  @keyframes shine{to{background-position:300% 0}}
+  .mbtn{margin-top:22px;opacity:0;animation:fade 1s 3.8s forwards}
+  .player{position:fixed;top:14px;left:14px;z-index:20;display:flex;align-items:center;gap:6px;background:#2a0e26cc;border:1px solid #ffffff33;border-radius:99px;padding:4px 6px;backdrop-filter:blur(6px)}
+  .player button{width:36px;height:36px;flex:none;border-radius:50%;border:0;background:linear-gradient(135deg,#ff7aa8,#d63a7c);color:#fff;cursor:pointer;font-size:1rem}
+  .player button:focus-visible{outline:3px solid var(--gold)}
+  .player .mi{display:flex;align-items:center;gap:6px;font-size:.8rem;color:#ffd9e6;overflow:hidden}
+  .player em{font-style:normal;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;padding-right:8px}
+  .eq{display:inline-flex;gap:2px;align-items:flex-end;height:14px}
+  .eq i{width:3px;height:4px;background:var(--gold);animation:eq .7s ease-in-out infinite alternate}
+  .eq i:nth-child(2){animation-delay:.2s}.eq i:nth-child(3){animation-delay:.4s}
+  .player:not(.on) .eq i{animation-play-state:paused}
+  @keyframes eq{to{height:14px}}
+  .fly{position:fixed;top:0;left:0;z-index:2;font-size:26px;pointer-events:none;animation:flit var(--t) linear infinite;animation-delay:var(--d)}
+  @keyframes flit{0%{transform:translate(-10vw,70vh)}25%{transform:translate(25vw,30vh) rotate(15deg)}50%{transform:translate(55vw,62vh) rotate(-12deg)}75%{transform:translate(80vw,18vh) rotate(14deg)}100%{transform:translate(110vw,50vh)}}
+  .marq{overflow:hidden;white-space:nowrap;margin:56px 0 0;padding:12px 0;background:#ffffff10;border-block:1px solid #ffffff22;color:var(--gold);font-weight:700}
+  .marq div{display:inline-block;animation:mq 30s linear infinite}
+  @keyframes mq{to{transform:translateX(-50%)}}
+  .hugsec{padding:70px 0 10px;text-align:center}
+  .hug{position:relative;width:150px;height:150px;border-radius:50%;border:0;cursor:pointer;font-size:3.4rem;background:conic-gradient(var(--rose) calc(var(--p,0)*1%),#ffffff22 0);-webkit-user-select:none;user-select:none;touch-action:none}
+  .hug::before{content:"";position:absolute;inset:8px;border-radius:50%;background:#4a1a45}
+  .hug span{position:relative;display:inline-block;transform:scale(calc(1 + var(--p,0)/130))}
+  .hug:focus-visible{outline:3px solid var(--gold);outline-offset:6px}
+  footer{text-align:center;padding:60px 10px 50px;color:#d9a3bd;font-size:.92rem}
+  .fx{position:fixed;z-index:9;pointer-events:none;will-change:transform}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01s!important;animation-delay:0s!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
 </head>
 <body>
+<canvas id="sky" aria-hidden="true"></canvas>
+<div class="player" id="player"><button id="mp" aria-label="Phát hoặc dừng nhạc">▶</button><button id="mn" aria-label="Bài nhạc khác ngẫu nhiên">🎲</button><div class="mi"><span class="eq" aria-hidden="true"><i></i><i></i><i></i></span><em id="mname">Nhạc 20/10</em></div></div>
+<span class="fly" style="--t:26s;--d:-3s" aria-hidden="true">🦋</span><span class="fly" style="--t:34s;--d:-16s;font-size:20px" aria-hidden="true">🦋</span><span class="fly" style="--t:42s;--d:-28s;font-size:22px" aria-hidden="true">🌸</span>
+<button class="snd" id="snd" aria-label="Bật/tắt âm thanh">🔔</button>
+<div class="toast" id="toast" role="status"></div>
+<main>
 
-<header id="app-header">
-    <div style="display: flex; gap: 10px; align-items: center;">
-        <button id="minimize-toggle" class="icon-btn" title="Hide toolbar">⌃</button>
-        <h1 class="collapsible">PyBiz <span style="font-weight:400; color: var(--text-muted); font-size: 0.85rem;">Full Python Runner</span></h1>
-    </div>
-    <div style="display: flex; gap: 10px; align-items: center;">
-        <div class="collapsible" style="display: flex; gap: 10px; align-items: center;">
-            <button id="projects-btn" class="icon-btn" title="Saved projects">📁 Projects</button>
-            <button id="save-btn" class="icon-btn" title="Save now">💾 Save</button>
-            <span id="last-saved" class="status" style="display:none;"></span>
-            <span id="persistence-status" class="status" style="display:none;"></span>
-            <button id="export-btn" class="icon-btn" title="Export as .py file">⬇ .py</button>
-            <span id="offline-status" class="status" style="display:none;">Offline ready</span>
-            <span id="storage-mode-status" class="status" style="display:none;" title="Progress and projects will still work, but won't be remembered after you close or reload this page.">Session only</span>
-            <input type="color" id="accent-picker" title="Accent color" value="#007bff">
-            <button id="theme-toggle" class="icon-btn" title="Toggle light/dark theme">🌙</button>
-            <span id="save-status" class="status" style="display:none;">Saved</span>
-            <span id="status" class="status">Loading...</span>
-        </div>
-        <button id="runBtn" class="btn" disabled>▶ Run</button>
-    </div>
-</header>
+<section class="hero">
+  <div class="bloom" aria-hidden="true">
+    <svg viewBox="0 0 200 200">
+      <defs>
+        <radialGradient id="gp" cx="50%" cy="85%" r="90%"><stop offset="0" stop-color="#ff4f8b"/><stop offset="1" stop-color="#ffc2d6"/></radialGradient>
+        <radialGradient id="gi" cx="50%" cy="85%" r="90%"><stop offset="0" stop-color="#ff7aa8"/><stop offset="1" stop-color="#fff0f5"/></radialGradient>
+        <radialGradient id="gc" cx="40%" cy="35%"><stop offset="0" stop-color="#fff2b8"/><stop offset="1" stop-color="#f2a93b"/></radialGradient>
+      </defs>
+      <g class="spin" id="outer"></g>
+      <g id="inner"></g>
+      <g class="core"><circle cx="100" cy="100" r="15" fill="url(#gc)"/><g id="dots"></g></g>
+    </svg>
+  </div>
+  <h1 class="script" id="title" aria-label="Chúc mừng 20/10"></h1>
+  <div class="name script">Mẹ Mi yêu quý</div>
+  <p class="sub">Gửi người phụ nữ con thương nhất. Hôm nay, con muốn nói với mẹ Mi điều con ít khi nói thành lời.</p>
+  <button class="btn mbtn" id="hm">🎶 Bật nhạc cho mẹ Mi</button>
+  <a class="cue" href="#thu" style="text-decoration:none">Mẹ kéo xuống nhé ↓</a>
+</section>
 
-<div id="projects-panel">
-    <div class="projects-panel-header">
-        <span>Projects</span>
-        <button id="new-project-btn" class="icon-btn" title="New project">+ New</button>
-    </div>
-    <div id="projects-list"></div>
-</div>
+<section class="mail" id="thu">
+  <h2 class="script">Mẹ có một lá thư</h2>
+  <p class="hint">Chạm vào phong thư để mở</p>
+  <button class="env" id="env" aria-label="Mở thư gửi mẹ Mi">
+    <div class="back"></div><div class="note"></div><div class="front"></div><div class="flap"></div><div class="seal">💗</div>
+  </button>
+  <article class="letter" id="letter">
+    <h3 class="script">Mẹ Mi yêu của con,</h3>
+    <p style="--i:0">Nhân ngày Phụ nữ Việt Nam 20/10, con chúc mẹ Mi luôn mạnh khỏe, vui vẻ, xinh đẹp và lúc nào cũng nở nụ cười thật tươi.</p>
+    <p style="--i:1">Cảm ơn mẹ vì đã luôn yêu thương, chăm sóc và ở bên con. Có những lúc con nghịch ngợm, chưa ngoan, hoặc ngại nói những lời tình cảm, nhưng trong lòng con luôn yêu mẹ rất nhiều.</p>
+    <p style="--i:2">Con mong mẹ có thật nhiều ngày bình yên, bớt mệt mỏi, thêm niềm vui, và luôn biết rằng mẹ là người quan trọng nhất đối với con.</p>
+    <p style="--i:3"><strong>Con không cần đợi một ngày đặc biệt mới nói yêu mẹ. Con yêu mẹ mỗi ngày!</strong></p>
+    <div class="sig script" style="--i:4">Con yêu mẹ thật nhiều,<br>bé con của mẹ Mi 💗</div>
+  </article>
+</section>
 
-<div class="container">
-    <div class="editor-panel">
-        <div class="label">Python Code</div>
-        <textarea id="code-editor" spellcheck="false"></textarea>
-    </div>
-    <div class="output-panel">
-        <div class="label">Console Output</div>
-        <div id="output"></div>
+<div class="marq" aria-hidden="true"><div>💗 Mẹ Mi là số 1 &nbsp; 🌷 Chúc mừng 20/10 &nbsp; ✨ Con yêu mẹ Mi nhiều lắm &nbsp; 🌸 Mẹ Mi luôn xinh đẹp &nbsp; 🤗 Cảm ơn mẹ Mi &nbsp; 💗 Mẹ Mi là số 1 &nbsp; 🌷 Chúc mừng 20/10 &nbsp; ✨ Con yêu mẹ Mi nhiều lắm &nbsp; 🌸 Mẹ Mi luôn xinh đẹp &nbsp; 🤗 Cảm ơn mẹ Mi &nbsp; 💗 Mẹ Mi là số 1 &nbsp; 🌷 Chúc mừng 20/10 &nbsp; ✨ Con yêu mẹ Mi nhiều lắm &nbsp; 🌸 Mẹ Mi luôn xinh đẹp &nbsp; 🤗 Cảm ơn mẹ Mi &nbsp; </div><div>💗 Mẹ Mi là số 1 &nbsp; 🌷 Chúc mừng 20/10 &nbsp; ✨ Con yêu mẹ Mi nhiều lắm &nbsp; 🌸 Mẹ Mi luôn xinh đẹp &nbsp; 🤗 Cảm ơn mẹ Mi &nbsp; 💗 Mẹ Mi là số 1 &nbsp; 🌷 Chúc mừng 20/10 &nbsp; ✨ Con yêu mẹ Mi nhiều lắm &nbsp; 🌸 Mẹ Mi luôn xinh đẹp &nbsp; 🤗 Cảm ơn mẹ Mi &nbsp; 💗 Mẹ Mi là số 1 &nbsp; 🌷 Chúc mừng 20/10 &nbsp; ✨ Con yêu mẹ Mi nhiều lắm &nbsp; 🌸 Mẹ Mi luôn xinh đẹp &nbsp; 🤗 Cảm ơn mẹ Mi &nbsp; </div></div>
 
-        <!-- Fast Input Bar -->
-        <div id="input-bar">
-            <span id="prompt-text">$</span>
-            <input type="text" id="user-input" autocomplete="off">
-        </div>
-    </div>
-</div>
+<section class="bsec">
+  <h2 class="script">Bóng bay lời chúc</h2>
+  <p class="hint">Mẹ Mi thử chọc vỡ từng quả bóng nhé</p>
+  <div class="bsky" id="bsky"></div>
+  <div class="wish" id="wish" role="status" aria-live="polite"></div>
+</section>
+
+<section class="scsec">
+  <h2 class="script">Phiếu quà bí mật</h2>
+  <p class="hint">Dùng ngón tay (hoặc chuột) cạo lớp bạc để xem quà</p>
+  <div class="scratch">
+    <div class="prize" id="prize"></div>
+    <canvas id="scr"></canvas>
+  </div>
+  <div class="actions"><button class="btn ghost" id="again">Cạo phiếu khác 🎟️</button></div>
+</section>
+
+<section class="hugsec">
+  <h2 class="script">Một cái ôm cho mẹ Mi</h2>
+  <p class="hint">Giữ chặt trái tim trong 3 giây</p>
+  <button class="hug" id="hug" aria-label="Giữ để ôm mẹ Mi"><span>💗</span></button>
+</section>
+
+<section class="garden-wrap">
+  <h2 class="script">Vườn hoa tặng mẹ</h2>
+  <p class="hint">Chạm vào khu vườn để trồng hoa. Đủ 20 bông cho ngày 20/10 sẽ có quà.</p>
+  <div class="counter"><b id="count">0</b><span>/ 20 bông hoa</span></div>
+  <div class="garden" id="garden" role="application" aria-label="Khu vườn: chạm để trồng hoa">
+    <button class="sun" id="sun" aria-label="Mặt trời bất ngờ"></button>
+    <div class="tip">🌱 Chạm vào đây để gieo hạt<br>(thử chạm cả mặt trời nhé 😉)</div>
+  </div>
+  <div class="actions">
+    <button class="btn" id="auto">Trồng giúp con 🌷</button>
+    <button class="btn ghost" id="reset">Làm lại</button>
+  </div>
+  <div class="gift" id="gift" role="status">
+    Mẹ Mi ơi, hai mươi bông hoa này không thể đẹp bằng nụ cười của mẹ, nhưng là cả tấm lòng con. Món quà con tặng mẹ là một cái ôm thật chặt và lời hứa sẽ ngoan hơn mỗi ngày.
+    <span class="big script">Mẹ Mi là số 1 trong lòng con ❤️</span>
+  </div>
+</section>
+
+<footer>Làm bằng ♥ dành riêng cho mẹ Mi · 20/10/2026</footer>
+</main>
 
 <script>
-    const codeEl = document.getElementById('code-editor');
-    const outEl = document.getElementById('output');
-    const runBtn = document.getElementById('runBtn');
-    const statusEl = document.getElementById('status');
-    const saveStatusEl = document.getElementById('save-status');
+const $ = s => document.querySelector(s);
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const NS = 'http://www.w3.org/2000/svg';
 
-    const inputBar = document.getElementById('input-bar');
-    const promptText = document.getElementById('prompt-text');
-    const userInput = document.getElementById('user-input');
-    const themeToggleBtn = document.getElementById('theme-toggle');
-    const accentPicker = document.getElementById('accent-picker');
-    const headerEl = document.getElementById('app-header');
-    const minimizeBtn = document.getElementById('minimize-toggle');
-    const saveBtn = document.getElementById('save-btn');
-    const lastSavedEl = document.getElementById('last-saved');
-    const persistenceStatusEl = document.getElementById('persistence-status');
-    const exportBtn = document.getElementById('export-btn');
+/* ---- Hoa nở ở trang đầu ---- */
+(function(){
+  const petal = (fill,len,w) => `<path d="M100 100 C ${100-w} ${100-len*.35}, ${100-w*.6} ${100-len}, 100 ${100-len} C ${100+w*.6} ${100-len}, ${100+w} ${100-len*.35}, 100 100Z" fill="${fill}"/>`;
+  let o='', n='';
+  for(let i=0;i<12;i++) o += `<g class="pet" style="--r:${i*30}deg;--i:${i}">${petal('url(#gp)',92,26)}</g>`;
+  for(let i=0;i<8;i++) n += `<g class="pet in" style="--r:${i*45+22}deg;--i:${i}">${petal('url(#gi)',66,22)}</g>`;
+  $('#outer').innerHTML = o; $('#inner').innerHTML = n;
+  let d=''; for(let i=0;i<10;i++){const a=i/10*6.283;d+=`<circle cx="${100+Math.cos(a)*8}" cy="${100+Math.sin(a)*8}" r="1.6" fill="#b86a12"/>`}
+  $('#dots').innerHTML = d;
+  // Chữ hiện từng ký tự
+  const t = $('#title'); let i = 0;
+  'Chúc mừng 20/10'.split('').forEach(c=>{
+    const s=document.createElement('span'); s.className='ch'; s.style.setProperty('--i',i++);
+    s.textContent = c===' ' ? '\u00a0' : c; s.setAttribute('aria-hidden','true'); t.appendChild(s);
+  });
+})();
 
-    const projectsBtn = document.getElementById('projects-btn');
-    const projectsPanel = document.getElementById('projects-panel');
-    const projectsListEl = document.getElementById('projects-list');
-    const newProjectBtn = document.getElementById('new-project-btn');
-
-    let pyodide = null;
-    let inputCallback = null; // Function to call when input is ready
-    let isWaitingForInput = false;
-    let isRunning = false;
-
-    // --- Output helper (avoids innerHTML injection / broken rendering) ---
-    function appendOutput(text, isError) {
-        const span = document.createElement('span');
-        if (isError) span.className = 'error';
-        span.textContent = (text === undefined || text === null ? '' : text) + '\n';
-        outEl.appendChild(span);
-        outEl.scrollTop = outEl.scrollHeight;
+/* ---- Cánh hoa rơi toàn trang ---- */
+(function(){
+  const cv = $('#sky'), cx = cv.getContext('2d'); let W,H,ps=[];
+  const resize=()=>{W=cv.width=innerWidth;H=cv.height=innerHeight};
+  resize(); addEventListener('resize',resize);
+  if(reduce) return;
+  const mk=(top)=>({x:Math.random()*W,y:top?-20:Math.random()*H,s:6+Math.random()*10,v:.4+Math.random()*.9,
+    w:Math.random()*6.28,r:Math.random()*6.28,vr:(Math.random()-.5)*.03,c:['#ff9ec0','#ffc2d6','#ffd8a8','#ff7aa8'][Math.random()*4|0],a:.35+Math.random()*.5});
+  for(let i=0;i<34;i++) ps.push(mk(false));
+  (function loop(){
+    cx.clearRect(0,0,W,H);
+    for(const p of ps){
+      p.y+=p.v; p.w+=.015; p.x+=Math.sin(p.w)*.6; p.r+=p.vr;
+      if(p.y>H+20){Object.assign(p,mk(true))}
+      cx.save(); cx.translate(p.x,p.y); cx.rotate(p.r); cx.globalAlpha=p.a; cx.fillStyle=p.c;
+      cx.beginPath(); cx.ellipse(0,0,p.s*.45,p.s,0,0,6.283); cx.fill(); cx.restore();
     }
+    requestAnimationFrame(loop);
+  })();
+})();
 
-    function clearOutput() {
-        outEl.textContent = '';
-    }
+/* ---- Tim và hoa bay lên ---- */
+function burst(x,y,n,list){
+  if(reduce) return;
+  list = list || ['💗','🌸','✨','💕','🌷'];
+  for(let i=0;i<n;i++){
+    const e=document.createElement('span'); e.className='fx'; e.textContent=list[Math.random()*list.length|0];
+    e.style.left=x+'px'; e.style.top=y+'px'; e.style.fontSize=(16+Math.random()*20)+'px';
+    document.body.appendChild(e);
+    const a=Math.random()*6.283, d=80+Math.random()*180;
+    e.animate([{transform:'translate(0,0) scale(.3)',opacity:1},
+      {transform:`translate(${Math.cos(a)*d}px,${Math.sin(a)*d-90}px) scale(1.1) rotate(${(Math.random()-.5)*120}deg)`,opacity:1,offset:.6},
+      {transform:`translate(${Math.cos(a)*d*1.2}px,${Math.sin(a)*d+60}px) scale(.8)`,opacity:0}],
+      {duration:1600+Math.random()*900,easing:'cubic-bezier(.2,.7,.3,1)'}).onfinish=()=>e.remove();
+  }
+}
 
-    function formatError(err) {
-        // PythonError objects stringify with a full traceback; keep only
-        // the message when possible, but fall back to the full text.
-        const text = (err && err.message) ? err.message : String(err);
-        return text;
-    }
+/* ---- Phong thư ---- */
+$('#env').addEventListener('click',function(){
+  const r=this.getBoundingClientRect();
+  this.classList.add('open');
+  burst(r.left+r.width/2, r.top+r.height/2, 26);
+  setTimeout(()=>{ $('#letter').classList.add('show'); $('#letter').scrollIntoView({behavior:'smooth',block:'center'}); },1700);
+});
 
-    // --- Projects (multiple saved scripts, switchable / deletable) ---
-    const LEGACY_CODE_KEY = 'fast-python-runner:code';
-    const PROJECTS_INDEX_KEY = 'pybiz:projects';
-    const ACTIVE_PROJECT_KEY = 'pybiz:active-project';
-    const projectCodeKey = (id) => 'pybiz:project:' + id;
-    // Prefer Claude's real persistent storage when it's available (inside
-    // claude.ai). If it's not - e.g. the file was downloaded and opened
-    // directly in a browser - fall back to a simple in-memory store so the
-    // app still works fully for the current tab; it just won't remember
-    // anything after the page is closed or reloaded.
-    function createMemoryStorage() {
-        const store = new Map();
-        return {
-            async get(key) {
-                if (!store.has(key)) throw new Error('Key not found: ' + key);
-                return { key, value: store.get(key), shared: false };
-            },
-            async set(key, value) {
-                store.set(key, value);
-                return { key, value, shared: false };
-            },
-            async delete(key) {
-                const existed = store.has(key);
-                store.delete(key);
-                return { key, deleted: existed, shared: false };
-            },
-            async list(prefix) {
-                const keys = [...store.keys()].filter(k => !prefix || k.startsWith(prefix));
-                return { keys, prefix, shared: false };
-            }
-        };
-    }
+/* ---- Vườn hoa ---- */
+const garden=$('#garden'), GOAL=20; let planted=0;
+const COLORS=[['#ff5c93','#ffd0e0'],['#ff9a5c','#ffe0c4'],['#ffd24d','#fff4c2'],['#c77dff','#ecd4ff'],['#ff7aa8','#ffe4ee'],['#f25f5c','#ffc9c8']];
+function flowerSVG(c){
+  const n=5+(Math.random()*3|0); let p='';
+  for(let i=0;i<n;i++) p+=`<ellipse cx="0" cy="-17" rx="9" ry="18" fill="${c[0]}" stroke="${c[1]}" stroke-width="1.5" transform="rotate(${i*360/n})"/>`;
+  return `<svg viewBox="-40 -40 80 80">${p}<circle r="8" fill="#ffe27a"/><circle r="3" fill="#d98a1c"/></svg>`;
+}
+function plant(x,y){
+  if(planted>=GOAL) return;
+  const h=garden.clientHeight, w=garden.clientWidth;
+  x=Math.max(24,Math.min(w-24,x)); y=Math.max(40,Math.min(h-50,y));
+  const f=document.createElement('div'); f.className='fl'; f.style.left=x+'px'; f.style.top=y+'px';
+  const s=44+Math.random()*30;
+  f.innerHTML=`<div class="stem" style="height:${h-y+10}px"></div><div class="head" style="--s:${s}px">${flowerSVG(COLORS[Math.random()*COLORS.length|0])}</div>`;
+  garden.appendChild(f); garden.classList.add('has');
+  planted++; $('#count').textContent=planted; setTimeout(()=>chime(planted),700);
+  const r=garden.getBoundingClientRect();
+  setTimeout(()=>burst(r.left+x,r.top+y,4,['✨','🌸']),800);
+  if(planted===GOAL) finish();
+}
+function finish(){
+  const g=$('#gift'); setTimeout(()=>{
+    g.classList.add('show'); g.scrollIntoView({behavior:'smooth',block:'center'});
+    const r=g.getBoundingClientRect();
+    for(let k=0;k<4;k++) setTimeout(()=>burst(innerWidth*(.2+Math.random()*.6),r.top+Math.random()*r.height,18),k*350);
+  },1400);
+}
+garden.addEventListener('pointerdown',e=>{const r=garden.getBoundingClientRect();plant(e.clientX-r.left,e.clientY-r.top)});
+$('#auto').addEventListener('click',()=>{
+  const left=GOAL-planted; if(left<=0) return;
+  for(let i=0;i<left;i++) setTimeout(()=>plant(30+Math.random()*(garden.clientWidth-60),60+Math.random()*(garden.clientHeight-130)),i*160);
+});
+$('#reset').addEventListener('click',()=>{
+  garden.querySelectorAll('.fl').forEach(e=>e.remove()); planted=0; $('#count').textContent=0;
+  garden.classList.remove('has'); $('#gift').classList.remove('show');
+});
 
-    // Prefer Claude's real persistent storage when it's available (inside
-    // claude.ai). The host sometimes attaches window.storage a moment
-    // *after* this script starts, so checking once synchronously can lose
-    // that race and wrongly conclude it's unavailable. Instead we poll for
-    // it briefly before falling back. If it never shows up (e.g. the file
-    // was downloaded and opened directly in a browser), we fall back to a
-    // simple in-memory store so the app still works for the current tab -
-    // it just won't remember anything after the page is closed or reloaded.
-    let storageApi = createMemoryStorage();
-    let persistentStorageAvailable = false;
+/* ================= BẤT NGỜ MỚI ================= */
+/* Âm thanh chuông nhỏ (thang âm ngũ cung) */
+let ac, muted=false; const SC=[523.25,587.33,659.25,783.99,880,1046.5];
+function chime(n=0){
+  if(muted) return;
+  try{
+    ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+    const t=ac.currentTime,o=ac.createOscillator(),g=ac.createGain();
+    o.type='sine'; o.frequency.value=SC[n%SC.length];
+    g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.14,t+.02); g.gain.exponentialRampToValueAtTime(.001,t+1.1);
+    o.connect(g).connect(ac.destination); o.start(t); o.stop(t+1.2);
+  }catch(e){}
+}
+$('#snd').addEventListener('click',function(){muted=!muted;this.textContent=muted?'🔕':'🔔'});
 
-    async function resolveStorage(timeoutMs = 2500, intervalMs = 100) {
-        const start = Date.now();
-        while (Date.now() - start < timeoutMs) {
-            if (typeof window !== 'undefined' && window.storage) {
-                storageApi = window.storage;
-                persistentStorageAvailable = true;
-                return true;
-            }
-            await new Promise((r) => setTimeout(r, intervalMs));
-        }
-        persistentStorageAvailable = false;
-        return false;
-    }
+/* Thông báo nhỏ */
+let tt; function toast(msg){
+  const t=$('#toast'); t.textContent=msg; t.classList.add('on');
+  clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('on'),2800);
+}
 
-    function updatePersistenceBadge() {
-        if (!persistenceStatusEl) return;
-        if (persistentStorageAvailable) {
-            persistenceStatusEl.style.display = 'none';
-        } else {
-            persistenceStatusEl.textContent = "Session only \u2014 won't survive a reload";
-            persistenceStatusEl.className = 'status error';
-            persistenceStatusEl.style.display = 'inline-block';
-        }
-    }
+/* Chạm vào bông hoa đầu trang: bướm bay ra + lời khen */
+const PRAISE=['Mẹ Mi xinh nhất trên đời! 🌷','Mẹ vất vả rồi, con thương mẹ lắm 💗','Có mẹ là điều may mắn nhất của con ✨','Nụ cười của mẹ làm con bình yên 😊','Mẹ Mi là siêu anh hùng của con 🦸‍♀️','Hôm nay mẹ được nghỉ ngơi nhé 🍵'];
+function butterflies(x,y){
+  if(reduce) return;
+  for(let i=0;i<9;i++){
+    const e=document.createElement('span'); e.className='fx'; e.textContent=Math.random()<.8?'🦋':'🌸';
+    e.style.left=x+'px'; e.style.top=y+'px'; e.style.fontSize=(22+Math.random()*16)+'px';
+    document.body.appendChild(e);
+    const sx=(Math.random()-.5)*2, p=[0,1,2,3].map(k=>({x:sx*(60+k*70)+Math.sin(k*2+i)*90, y:-(k*(90+Math.random()*60))}));
+    e.animate(p.map((q,k)=>({transform:`translate(${q.x}px,${q.y}px) rotate(${(k%2?1:-1)*18}deg) scale(${1-k*.08})`,opacity:k===3?0:1})),
+      {duration:3800+Math.random()*2200,delay:i*120,easing:'ease-in-out',fill:'backwards'}).onfinish=()=>e.remove();
+  }
+}
+$('.bloom').addEventListener('click',e=>{
+  butterflies(e.clientX,e.clientY); burst(e.clientX,e.clientY,10,['💗','✨']);
+  toast(PRAISE[Math.random()*PRAISE.length|0]); chime(Math.random()*6|0);
+});
 
-    const hasStorage = true; // storageApi always works now (real or in-memory)
+/* Vệt lấp lánh theo chuột */
+let lastS=0;
+addEventListener('pointermove',e=>{
+  if(reduce||e.pointerType!=='mouse'||e.timeStamp-lastS<55) return; lastS=e.timeStamp;
+  const s=document.createElement('span'); s.className='fx'; s.textContent=['✨','💗','·'][Math.random()*3|0];
+  s.style.left=e.clientX+'px'; s.style.top=e.clientY+'px'; s.style.fontSize=(10+Math.random()*10)+'px'; document.body.appendChild(s);
+  s.animate([{transform:'translate(0,0)',opacity:.9},{transform:`translate(${(Math.random()-.5)*30}px,32px) scale(.4)`,opacity:0}],{duration:900}).onfinish=()=>s.remove();
+});
 
-    let projects = [];          // [{ id, name, updatedAt }]
-    let activeProjectId = null;
-    let saveTimer = null;
-    let saveIndicatorTimer = null;
-
-    function genId() {
-        return 'p_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-    }
-
-    function flashSaveStatus(text, isErr) {
-        if (!saveStatusEl) return;
-        saveStatusEl.textContent = text;
-        saveStatusEl.className = 'status' + (isErr ? ' error' : ' ready');
-        saveStatusEl.style.display = 'inline-block';
-        clearTimeout(saveIndicatorTimer);
-        saveIndicatorTimer = setTimeout(() => { saveStatusEl.style.display = 'none'; }, 1500);
-    }
-
-    function formatTime(date) {
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    }
-
-    function showLastSaved(text, isErr) {
-        if (!lastSavedEl) return;
-        lastSavedEl.textContent = text;
-        lastSavedEl.className = 'status' + (isErr ? ' error' : '');
-        lastSavedEl.style.display = 'inline-block';
-    }
-
-    async function saveProjectIndex() {
-        if (!hasStorage) return;
-        try {
-            await storageApi.set(PROJECTS_INDEX_KEY, JSON.stringify(projects), false);
-        } catch (e) {
-            console.error('Project index save failed:', e);
-        }
-    }
-
-    async function setActiveProjectId(id) {
-        activeProjectId = id;
-        if (!hasStorage) return;
-        try { await storageApi.set(ACTIVE_PROJECT_KEY, id, false); } catch (e) { /* ignore */ }
-    }
-
-    // Saves the editor's current contents into whichever project is active.
-    async function saveProgress() {
-        if (!activeProjectId) return;
-        try {
-            const savedAt = new Date();
-            await storageApi.set(projectCodeKey(activeProjectId), JSON.stringify({ code: codeEl.value }), false);
-            const proj = projects.find(p => p.id === activeProjectId);
-            if (proj) {
-                proj.updatedAt = savedAt.toISOString();
-                await saveProjectIndex();
-            }
-            flashSaveStatus('Saved', false);
-            showLastSaved('Last saved ' + formatTime(savedAt), false);
-            renderProjectsList();
-        } catch (e) {
-            console.error('Save failed:', e);
-            flashSaveStatus('Save failed', true);
-            showLastSaved('Save failed at ' + formatTime(new Date()), true);
-        }
-    }
-
-    async function loadActiveProjectCode() {
-        if (!hasStorage || !activeProjectId) return;
-        try {
-            const result = await storageApi.get(projectCodeKey(activeProjectId), false);
-            let code = '';
-            if (result && typeof result.value === 'string') {
-                try {
-                    const parsed = JSON.parse(result.value);
-                    code = (parsed && typeof parsed.code === 'string') ? parsed.code : '';
-                } catch (_) {
-                    code = result.value;
-                }
-            }
-            codeEl.value = code;
-        } catch (e) {
-            codeEl.value = '';
-        }
-        const proj = projects.find(p => p.id === activeProjectId);
-        showLastSaved(proj && proj.updatedAt ? ('Last saved ' + formatTime(new Date(proj.updatedAt))) : 'Not saved yet', false);
-    }
-
-    // Sets up the project system: loads the saved index, migrates an old
-    // single-slot save if this is the first time projects are used, and
-    // otherwise resumes whichever project was last active.
-    async function initProjects() {
-        if (!hasStorage) {
-            renderProjectsList();
-            return;
-        }
-        try {
-            const res = await storageApi.get(PROJECTS_INDEX_KEY, false);
-            if (res && typeof res.value === 'string') {
-                const parsed = JSON.parse(res.value);
-                if (Array.isArray(parsed)) projects = parsed;
-            }
-        } catch (e) { /* no index yet */ }
-
-        if (projects.length === 0) {
-            let legacyCode = '';
-            try {
-                const legacy = await storageApi.get(LEGACY_CODE_KEY, false);
-                if (legacy && typeof legacy.value === 'string') {
-                    try {
-                        const parsed = JSON.parse(legacy.value);
-                        legacyCode = (parsed && typeof parsed.code === 'string') ? parsed.code : legacy.value;
-                    } catch (_) {
-                        legacyCode = legacy.value;
-                    }
-                }
-            } catch (e) { /* nothing to migrate */ }
-
-            const id = genId();
-            projects = [{ id, name: 'My Project', updatedAt: new Date().toISOString() }];
-            await saveProjectIndex();
-            await storageApi.set(projectCodeKey(id), JSON.stringify({ code: legacyCode }), false);
-            await setActiveProjectId(id);
-        } else {
-            try {
-                const res = await storageApi.get(ACTIVE_PROJECT_KEY, false);
-                activeProjectId = (res && typeof res.value === 'string') ? res.value : null;
-            } catch (e) {
-                activeProjectId = null;
-            }
-            if (!activeProjectId || !projects.some(p => p.id === activeProjectId)) {
-                activeProjectId = projects[0].id;
-                await setActiveProjectId(activeProjectId);
-            }
-        }
-
-        await loadActiveProjectCode();
-        renderProjectsList();
-    }
-
-    async function createProject() {
-        const name = (prompt('Project name:', 'Untitled ' + (projects.length + 1)) || '').trim();
-        if (!name) return;
-
-        clearTimeout(saveTimer);
-        await saveProgress(); // persist whatever's currently open first
-
-        const id = genId();
-        projects.push({ id, name, updatedAt: new Date().toISOString() });
-        await saveProjectIndex();
-        if (hasStorage) {
-            try { await storageApi.set(projectCodeKey(id), JSON.stringify({ code: '' }), false); } catch (e) {}
-        }
-        await setActiveProjectId(id);
-        codeEl.value = '';
-        showLastSaved('New project — not saved yet', false);
-        renderProjectsList();
-        closeProjectsPanel();
-    }
-
-    async function switchToProject(id) {
-        if (id === activeProjectId) { closeProjectsPanel(); return; }
-        clearTimeout(saveTimer);
-        await saveProgress(); // persist the outgoing project first
-        await setActiveProjectId(id);
-        await loadActiveProjectCode();
-        renderProjectsList();
-        closeProjectsPanel();
-    }
-
-    async function deleteProject(id, evt) {
-        if (evt) evt.stopPropagation();
-        const proj = projects.find(p => p.id === id);
-        if (!proj) return;
-        if (!confirm(`Delete project "${proj.name}"? This can't be undone.`)) return;
-
-        if (hasStorage) {
-            try { await storageApi.delete(projectCodeKey(id), false); } catch (e) { /* already gone */ }
-        }
-        projects = projects.filter(p => p.id !== id);
-        await saveProjectIndex();
-
-        if (id === activeProjectId) {
-            if (projects.length === 0) {
-                const newId = genId();
-                projects = [{ id: newId, name: 'My Project', updatedAt: new Date().toISOString() }];
-                await saveProjectIndex();
-                if (hasStorage) {
-                    try { await storageApi.set(projectCodeKey(newId), JSON.stringify({ code: '' }), false); } catch (e) {}
-                }
-                await setActiveProjectId(newId);
-            } else {
-                await setActiveProjectId(projects[0].id);
-            }
-            await loadActiveProjectCode();
-        }
-        renderProjectsList();
-    }
-
-    function renderProjectsList() {
-        projectsListEl.textContent = '';
-
-        if (!hasStorage) {
-            const msg = document.createElement('div');
-            msg.className = 'projects-empty';
-            msg.textContent = 'Storage isn\u2019t available in this context.';
-            projectsListEl.appendChild(msg);
-            return;
-        }
-        if (projects.length === 0) {
-            const msg = document.createElement('div');
-            msg.className = 'projects-empty';
-            msg.textContent = 'No projects yet.';
-            projectsListEl.appendChild(msg);
-            return;
-        }
-
-        const sorted = [...projects].sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
-        for (const proj of sorted) {
-            const row = document.createElement('div');
-            row.className = 'project-row' + (proj.id === activeProjectId ? ' active' : '');
-            row.addEventListener('click', () => switchToProject(proj.id));
-
-            const info = document.createElement('div');
-            info.className = 'project-info';
-            const nameEl = document.createElement('div');
-            nameEl.className = 'project-name';
-            nameEl.textContent = proj.name;
-            const timeEl = document.createElement('div');
-            timeEl.className = 'project-time';
-            timeEl.textContent = proj.updatedAt ? ('Saved ' + formatTime(new Date(proj.updatedAt))) : 'Not saved yet';
-            info.appendChild(nameEl);
-            info.appendChild(timeEl);
-
-            const delBtn = document.createElement('button');
-            delBtn.className = 'project-delete';
-            delBtn.title = 'Delete project';
-            delBtn.textContent = '🗑';
-            delBtn.addEventListener('click', (e) => deleteProject(proj.id, e));
-
-            row.appendChild(info);
-            row.appendChild(delBtn);
-            projectsListEl.appendChild(row);
-        }
-    }
-
-    function toggleProjectsPanel() {
-        const isOpen = projectsPanel.style.display === 'block';
-        projectsPanel.style.display = isOpen ? 'none' : 'block';
-    }
-
-    function closeProjectsPanel() {
-        projectsPanel.style.display = 'none';
-    }
-
-    projectsBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        toggleProjectsPanel();
+/* Bóng bay lời chúc */
+(function(){
+  const W=['Chúc mẹ luôn khỏe mạnh, không bao giờ phải lo nghĩ 🌿','Chúc mẹ mỗi sáng thức dậy đều thấy một ngày thật vui ☀️','Chúc mẹ luôn trẻ đẹp, tuổi chỉ là con số 🌸','Chúc mẹ có thật nhiều thời gian cho riêng mình 🍵','Chúc mẹ được yêu thương nhiều như mẹ đã yêu thương con 💞','Chúc mẹ luôn là nữ hoàng của gia đình mình 👑'];
+  const C=['#ff5c93','#ffd24d','#7ad7f0','#c77dff','#ff9a5c','#8fd3b6'], L=['4%','19%','34%','49%','64%','78%'], T=['10%','38%','6%','40%','12%','36%'];
+  const sky=$('#bsky'), wish=$('#wish'); let left=W.length;
+  W.forEach((w,i)=>{
+    const b=document.createElement('button'); b.className='balloon'; b.setAttribute('aria-label','Quả bóng bay lời chúc');
+    b.style.cssText=`--c:${C[i]};--l:${L[i]};--t:${T[i]};--d:${-i*.5}s`;
+    b.addEventListener('click',()=>{
+      const r=b.getBoundingClientRect(); b.classList.add('pop'); setTimeout(()=>b.remove(),300);
+      burst(r.left+r.width/2,r.top+r.height/2,12,['🎉','✨','💗','🌸']); chime(i);
+      left--; wish.innerHTML=`<span>${left?w:w+'<br><b style="color:var(--gold)">Hết bóng rồi, nhưng lời chúc trong tim con thì vô tận 💖</b>'}</span>`;
     });
-    newProjectBtn.addEventListener('click', createProject);
-    document.addEventListener('click', (e) => {
-        if (projectsPanel.style.display === 'block' && !projectsPanel.contains(e.target) && e.target !== projectsBtn) {
-            closeProjectsPanel();
-        }
-    });
+    sky.appendChild(b);
+  });
+})();
 
-    function scheduleSave() {
-        if (!hasStorage) return;
-        clearTimeout(saveTimer);
-        saveTimer = setTimeout(saveProgress, 600);
+/* Phiếu quà cạo bạc */
+(function(){
+  const P=[['🍽️','Con rửa bát một tuần liền, mẹ nghỉ nhé!'],['🤗','Một cái ôm thật chặt, dùng bất cứ lúc nào'],['💆','Một buổi mát-xa vai cho mẹ'],['🍜','Con nấu bữa tối (hoặc đặt món mẹ thích) mời mẹ'],['🎬','Một tối xem phim cùng mẹ, mẹ chọn phim'],['☎️','Một buổi tâm sự, con ngồi nghe mẹ nói thoải mái'],['🛍️','Một buổi đi chợ cùng mẹ, con xách đồ']];
+  const cv=$('#scr'), cx=cv.getContext('2d'); let down=false,done=false,mv=0,last=-1,w,h;
+  function init(){
+    let k; do{k=Math.random()*P.length|0}while(k===last); last=k;
+    $('#prize').innerHTML=`<span style="font-size:2.4rem">${P[k][0]}</span><small>Phiếu đặc biệt dành cho mẹ Mi</small>${P[k][1]}`;
+    w=cv.width=cv.parentElement.clientWidth; h=cv.height=cv.parentElement.clientHeight;
+    cv.style.opacity=1; cv.style.pointerEvents='auto'; done=false; mv=0;
+    cx.globalCompositeOperation='source-over';
+    const g=cx.createLinearGradient(0,0,w,h); g.addColorStop(0,'#c9c9d6'); g.addColorStop(.5,'#f2f2f8'); g.addColorStop(1,'#a9a9bb');
+    cx.fillStyle=g; cx.fillRect(0,0,w,h);
+    cx.fillStyle='#6b5a78'; cx.font='700 20px "Be Vietnam Pro",sans-serif'; cx.textAlign='center'; cx.fillText('🎟️ Cạo nhẹ để xem quà',w/2,h/2+7);
+  }
+  function scr(e){
+    if(!down||done) return; const r=cv.getBoundingClientRect();
+    cx.globalCompositeOperation='destination-out'; cx.beginPath(); cx.arc(e.clientX-r.left,e.clientY-r.top,22,0,7); cx.fill();
+    if(++mv%10===0) check();
+  }
+  function check(){
+    const d=cx.getImageData(0,0,w,h).data; let c=0,n=0;
+    for(let i=3;i<d.length;i+=64){n++; if(d[i]===0)c++}
+    if(c/n>.45){
+      done=true; cv.style.opacity=0; cv.style.pointerEvents='none';
+      const r=cv.getBoundingClientRect(); burst(r.left+r.width/2,r.top+r.height/2,22); chime(5); toast('Quà này mẹ nhớ đòi con nhé! 😄');
     }
+  }
+  cv.addEventListener('pointerdown',e=>{down=true;cv.setPointerCapture(e.pointerId);scr(e)});
+  cv.addEventListener('pointermove',scr);
+  cv.addEventListener('pointerup',()=>down=false); cv.addEventListener('pointercancel',()=>down=false);
+  $('#again').addEventListener('click',init); init();
+})();
 
-    codeEl.addEventListener('input', scheduleSave);
-    // Also save immediately if the user navigates away / closes the tab.
-    window.addEventListener('beforeunload', () => {
-        if (hasStorage && activeProjectId) {
-            clearTimeout(saveTimer);
-            // Fire-and-forget; beforeunload can't reliably await.
-            storageApi.set(projectCodeKey(activeProjectId), JSON.stringify({ code: codeEl.value }), false).catch(() => {});
-        }
-    });
+/* Chạm vào mặt trời trong vườn: pháo hoa */
+$('#sun').addEventListener('pointerdown',e=>e.stopPropagation());
+$('#sun').addEventListener('click',()=>{
+  const r=garden.getBoundingClientRect(); toast('Mặt trời cũng chúc mẹ 20/10 vui vẻ! ☀️');
+  for(let k=0;k<5;k++) setTimeout(()=>{burst(r.left+r.width*(.15+Math.random()*.7),r.top+r.height*(.1+Math.random()*.4),16,['🎆','🎇','✨','💖']);chime(k+1)},k*320);
+});
+/* ===== NHẠC NGẪU NHIÊN CHỦ ĐỀ 20/10 ===== */
+/* Muốn dùng bài hát thật: bỏ file .mp3 cạnh file này rồi thêm vào đây, ví dụ:
+   const PLAYLIST=[{name:'Tên bài hát',src:'bai1.mp3'}];  (nếu để trống sẽ dùng nhạc tự tạo) */
+const PLAYLIST=[];
+const THEMES=[
+ {n:'Khúc ru của mẹ',k:60,b:70,p:[[0,0],[9,1],[5,0],[7,0]]},
+ {n:'Bình minh ngày 20/10',k:62,b:96,p:[[0,0],[7,0],[9,1],[5,0]]},
+ {n:'Hoa hồng tặng mẹ',k:65,b:84,p:[[0,0],[5,0],[9,1],[7,0]]},
+ {n:'Nắng ấm quê nhà',k:67,b:104,p:[[9,1],[5,0],[0,0],[7,0]]},
+ {n:'Mẹ ơi, con về',k:64,b:66,p:[[0,0],[4,1],[5,0],[7,0]]}];
+const QL=[[0,4,7],[0,3,7]], PENT=[0,2,4,7,9,12];
+const mus={on:false,th:null,step:0,next:0,timer:null,bus:null,aud:null,idx:-1};
+function getAC(){ac=ac||new (window.AudioContext||window.webkitAudioContext)(); if(ac.state==='suspended') ac.resume(); return ac}
+function buildBus(){
+  const a=getAC(); mus.bus=a.createGain(); mus.bus.gain.value=.9; mus.bus.connect(a.destination);
+  const d=a.createDelay(); d.delayTime.value=.34; const f=a.createGain(); f.gain.value=.35;
+  mus.bus.connect(d); d.connect(f); f.connect(d); d.connect(a.destination);
+}
+function nt(m,t,d,type,v){
+  const o=ac.createOscillator(),g=ac.createGain(); o.type=type; o.frequency.value=440*Math.pow(2,(m-69)/12);
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(v,t+.04); g.gain.exponentialRampToValueAtTime(.0008,t+d);
+  o.connect(g); g.connect(mus.bus); o.start(t); o.stop(t+d+.05);
+}
+function tick(t){
+  const T=mus.th, spb=60/T.b/2, s=mus.step%8, c=T.p[(mus.step>>3)%4], base=T.k+c[0], tones=QL[c[1]].map(x=>base+x);
+  if(s===0){ tones.forEach(m=>nt(m,t,spb*8,'sine',.045)); nt(base-12,t,spb*4,'triangle',.13); }
+  if(s===4) nt(base-12+7,t,spb*3,'triangle',.08);
+  nt(tones[[0,1,2,1,2,1,2,1][s]]+12,t,.7,'triangle',.07);
+  if(s%2===0 && Math.random()<.6) nt(T.k+12+PENT[Math.random()*PENT.length|0],t,1.2,'sine',.09);
+  mus.step++;
+  if(mus.step>=128) pick();
+}
+function pick(){
+  let i; do{i=Math.random()*THEMES.length|0}while(THEMES[i]===mus.th); mus.th=THEMES[i]; mus.step=0; label(mus.th.n);
+}
+function label(n){ $('#mname').textContent='🎵 '+n; }
+function ui(){ $('#player').classList.toggle('on',mus.on); $('#mp').textContent=mus.on?'⏸':'▶'; }
+function trackFile(){
+  let i; do{i=Math.random()*PLAYLIST.length|0}while(PLAYLIST.length>1&&i===mus.idx); mus.idx=i;
+  mus.aud.src=PLAYLIST[i].src; label(PLAYLIST[i].name); mus.aud.play().catch(()=>{});
+}
+function playMusic(){
+  if(mus.on) return; mus.on=true; ui();
+  if(PLAYLIST.length){ if(!mus.aud){mus.aud=new Audio(); mus.aud.onended=trackFile} mus.aud.src?mus.aud.play().catch(()=>{}):trackFile(); return; }
+  getAC(); if(!mus.bus) buildBus(); if(!mus.th) pick(); else label(mus.th.n);
+  mus.next=ac.currentTime+.1;
+  mus.timer=setInterval(()=>{ while(mus.next<ac.currentTime+.35){ tick(mus.next); mus.next+=60/mus.th.b/2; } },100);
+}
+function pauseMusic(){ mus.on=false; ui(); clearInterval(mus.timer); if(mus.aud) mus.aud.pause(); }
+function nextMusic(){
+  if(PLAYLIST.length){ if(!mus.aud){mus.aud=new Audio(); mus.aud.onended=trackFile} mus.on=true; ui(); trackFile(); }
+  else { const was=mus.on; if(was) pauseMusic(); pick(); playMusic(); }
+  toast('Bài ngẫu nhiên: '+$('#mname').textContent.replace('🎵 ',''));
+}
+const firstTouch=e=>{ if(e.target.closest('#player')) return; removeEventListener('pointerdown',firstTouch,true); playMusic(); };
+addEventListener('pointerdown',firstTouch,true);
+$('#mp').addEventListener('click',()=>{ removeEventListener('pointerdown',firstTouch,true); mus.on?pauseMusic():playMusic(); });
+$('#mn').addEventListener('click',()=>{ removeEventListener('pointerdown',firstTouch,true); nextMusic(); });
+$('#hm').addEventListener('click',function(){ playMusic(); this.style.display='none'; });
 
-    // --- Theme + accent color (persisted alongside code) ---
-    const SETTINGS_STORAGE_KEY = 'fast-python-runner:settings';
-    const DEFAULT_ACCENT = '#007bff';
-    let currentTheme = 'dark';
-    let currentAccent = DEFAULT_ACCENT;
-    let headerCollapsed = false;
-    let settingsSaveTimer = null;
+/* Chạm bất kỳ đâu: tim nhỏ bay lên */
+addEventListener('pointerdown',e=>{ if(!e.target.closest('button,a,.garden,.balloon,.player')) burst(e.clientX,e.clientY,3,['💗','✨','🌸']); });
 
-    function applyTheme(theme) {
-        currentTheme = theme === 'light' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', currentTheme);
-        themeToggleBtn.textContent = currentTheme === 'light' ? '☀️' : '🌙';
-        themeToggleBtn.title = currentTheme === 'light' ? 'Switch to dark theme' : 'Switch to light theme';
-    }
-
-    function applyAccent(color) {
-        if (!color) return;
-        currentAccent = color;
-        document.documentElement.style.setProperty('--accent', color);
-        accentPicker.value = color;
-    }
-
-    function applyHeaderCollapsed(collapsed) {
-        headerCollapsed = !!collapsed;
-        headerEl.classList.toggle('collapsed', headerCollapsed);
-        minimizeBtn.textContent = headerCollapsed ? '⌄' : '⌃';
-        minimizeBtn.title = headerCollapsed ? 'Show toolbar' : 'Hide toolbar';
-    }
-
-    function scheduleSettingsSave() {
-        if (!hasStorage) return;
-        clearTimeout(settingsSaveTimer);
-        settingsSaveTimer = setTimeout(async () => {
-            try {
-                await storageApi.set(
-                    SETTINGS_STORAGE_KEY,
-                    JSON.stringify({ theme: currentTheme, accent: currentAccent, collapsed: headerCollapsed }),
-                    false
-                );
-            } catch (e) {
-                console.error('Settings save failed:', e);
-            }
-        }, 300);
-    }
-
-    async function loadSettings() {
-        // Fall back to the system preference until (or unless) we load saved settings.
-        const prefersLight = typeof window.matchMedia === 'function' &&
-            window.matchMedia('(prefers-color-scheme: light)').matches;
-        applyTheme(prefersLight ? 'light' : 'dark');
-        applyAccent(DEFAULT_ACCENT);
-        applyHeaderCollapsed(false);
-
-        if (!hasStorage) return;
-        try {
-            const result = await storageApi.get(SETTINGS_STORAGE_KEY, false);
-            if (result && typeof result.value === 'string') {
-                const parsed = JSON.parse(result.value);
-                if (parsed && typeof parsed === 'object') {
-                    if (parsed.theme) applyTheme(parsed.theme);
-                    if (parsed.accent) applyAccent(parsed.accent);
-                    applyHeaderCollapsed(!!parsed.collapsed);
-                }
-            }
-        } catch (e) {
-            // No saved settings yet - defaults above stay in effect.
-        }
-    }
-
-    themeToggleBtn.addEventListener('click', () => {
-        applyTheme(currentTheme === 'light' ? 'dark' : 'light');
-        scheduleSettingsSave();
-    });
-
-    accentPicker.addEventListener('input', () => {
-        applyAccent(accentPicker.value);
-        scheduleSettingsSave();
-    });
-
-    // One button to minimize (hide) or reopen the top toolbar, freeing up
-    // space for the editor/output. Run stays reachable either way.
-    minimizeBtn.addEventListener('click', () => {
-        applyHeaderCollapsed(!headerCollapsed);
-        scheduleSettingsSave();
-    });
-
-    // Manual "save now" button, in addition to the automatic autosave.
-    saveBtn.addEventListener('click', () => {
-        clearTimeout(saveTimer);
-        saveProgress();
-        scheduleSettingsSave();
-    });
-
-    // Export the current editor contents as a downloadable .py file.
-    exportBtn.addEventListener('click', () => {
-        const blob = new Blob([codeEl.value], { type: 'text/x-python;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
-        a.href = url;
-        a.download = `pybiz-${stamp}.py`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-    });
-
-    // --- Offline support ---
-    // Pyodide itself is a multi-megabyte WebAssembly engine that has to be
-    // downloaded at least once - there's no way around that. What we *can*
-    // do is cache it the first time it loads successfully, so every run
-    // after that works with no wifi / no internet at all. We register a
-    // tiny service worker (built inline, as a Blob, so this stays a single
-    // self-contained file) that caches every Pyodide asset it sees and
-    // falls back to the cache whenever the network is unavailable.
-    const offlineStatusEl = document.getElementById('offline-status');
-    let offlineCachingActive = false;
-
-    async function setupOfflineCache() {
-        if (!('serviceWorker' in navigator)) return;
-        // Service workers require a real http(s) origin - they cannot be
-        // registered from a page opened directly as a local file (file://).
-        if (location.protocol === 'file:') return;
-        const swSource = `
-            const CACHE_NAME = 'pybiz-offline-v1';
-            self.addEventListener('install', (e) => self.skipWaiting());
-            self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
-            self.addEventListener('fetch', (event) => {
-                const req = event.request;
-                if (req.method !== 'GET') return;
-                // Only take over the Python engine's own assets; leave
-                // everything else (the page itself, etc.) alone.
-                if (!/pyodide/i.test(req.url)) return;
-                event.respondWith((async () => {
-                    const cache = await caches.open(CACHE_NAME);
-                    const cached = await cache.match(req);
-                    try {
-                        const fresh = await fetch(req);
-                        if (fresh && fresh.ok) cache.put(req, fresh.clone());
-                        return fresh;
-                    } catch (err) {
-                        if (cached) return cached;
-                        throw err;
-                    }
-                })());
-            });
-        `;
-        try {
-            const blobUrl = URL.createObjectURL(new Blob([swSource], { type: 'application/javascript' }));
-            await navigator.serviceWorker.register(blobUrl);
-            offlineCachingActive = true;
-        } catch (e) {
-            console.warn('Offline caching unavailable in this browser/context:', e);
-        }
-    }
-
-    function showOfflineReady() {
-        if (!offlineStatusEl) return;
-        offlineStatusEl.textContent = 'Offline ready';
-        offlineStatusEl.className = 'status ready';
-        offlineStatusEl.style.display = 'inline-block';
-    }
-
-    // --- 1. Load Pyodide ---
-    async function initPyodide() {
-        try {
-            if (typeof loadPyodide === 'undefined') throw new Error("Pyodide script failed to load. Check your network connection.");
-            pyodide = await loadPyodide();
-
-            // Redirect stdout / stderr to the console panel
-            pyodide.setStdout({ batched: (m) => appendOutput(m, false) });
-            pyodide.setStderr({ batched: (m) => appendOutput(m, true) });
-
-            // Bridge for interactive input(): a JS function that returns a
-            // Promise resolved when the user submits the input bar.
-            pyodide.globals.set("__js_request_input__", (prompt) => {
-                return new Promise((resolve) => {
-                    isWaitingForInput = true;
-                    promptText.textContent = (prompt === undefined || prompt === null || prompt === "") ? "$" : String(prompt);
-                    inputBar.style.display = 'flex';
-                    userInput.value = '';
-                    userInput.focus();
-                    inputCallback = resolve;
-                });
-            });
-
-            // Set up a Python-side helper that:
-            //  1. Defines an async input() replacement backed by the JS bridge.
-            //  2. Parses the user's script with `ast`, rewrites any input(...)
-            //     call into `await input(...)`, wraps the whole script body in
-            //     a single async function, and awaits it.
-            // This lets ordinary synchronous-looking scripts (like the sample
-            // calculator) use input() without blocking the browser's main
-            // thread, which is the only way to get real interactivity in
-            // Pyodide running on the main thread.
-            await pyodide.runPythonAsync(`
-import ast
-
-async def fast_input(prompt=""):
-    return await __js_request_input__(prompt)
-
-input = fast_input
-
-class _AwaitInputCalls(ast.NodeTransformer):
-    def visit_Call(self, node):
-        self.generic_visit(node)
-        if isinstance(node.func, ast.Name) and node.func.id == "input":
-            return ast.copy_location(ast.Await(value=node), node)
-        return node
-
-async def __run_user_code__(source):
-    tree = ast.parse(source, mode="exec")
-    _AwaitInputCalls().visit(tree)
-    body = tree.body if tree.body else [ast.Pass()]
-    func_node = ast.AsyncFunctionDef(
-        name="__user_main__",
-        args=ast.arguments(
-            posonlyargs=[], args=[], vararg=None,
-            kwonlyargs=[], kw_defaults=[], kwarg=None, defaults=[]
-        ),
-        body=body,
-        decorator_list=[],
-        returns=None,
-        type_comment=None,
-    )
-    module = ast.Module(body=[func_node], type_ignores=[])
-    ast.fix_missing_locations(module)
-    code_obj = compile(module, "<user_code>", "exec")
-    ns = {"input": input, "__name__": "__main__"}
-    exec(code_obj, ns)
-    await ns["__user_main__"]()
-            `);
-
-            statusEl.textContent = "Ready";
-            statusEl.className = "status ready";
-            runBtn.disabled = false;
-            if (offlineCachingActive) showOfflineReady();
-            return true;
-        } catch (e) {
-            console.error("Init failed:", e);
-            statusEl.textContent = "Error";
-            statusEl.className = "status error";
-            if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-                appendOutput(
-                    "You're offline, and PyBiz hasn't cached the Python engine on this device yet. " +
-                    "Connect to the internet once so it can download (about 10-15MB) - after that, " +
-                    "PyBiz will keep working with no wifi or internet at all.",
-                    true
-                );
-            } else {
-                appendOutput("Failed to initialize Python runtime: " + formatError(e), true);
-            }
-            return false;
-        }
-    }
-
-    // --- 2. Handle Input ---
-    function submitInput() {
-        if (!isWaitingForInput) return;
-        const val = userInput.value;
-        inputBar.style.display = 'none';
-        isWaitingForInput = false;
-
-        // Echo the prompt + typed value into the console, like a real terminal
-        appendOutput(promptText.textContent + " " + val, false);
-
-        const resolve = inputCallback;
-        inputCallback = null;
-        userInput.value = '';
-        if (resolve) resolve(val);
-    }
-
-    userInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            submitInput();
-        }
-    });
-
-    // --- 3. Run Code ---
-    async function runCode() {
-        if (isRunning || !pyodide) return;
-        isRunning = true;
-
-        clearOutput();
-        inputBar.style.display = 'none';
-        isWaitingForInput = false;
-        inputCallback = null;
-
-        runBtn.disabled = true;
-        runBtn.textContent = "Running...";
-
-        try {
-            pyodide.globals.set("__user_source__", codeEl.value);
-            await pyodide.runPythonAsync("await __run_user_code__(__user_source__)");
-        } catch (err) {
-            appendOutput(formatError(err), true);
-        } finally {
-            runBtn.disabled = false;
-            runBtn.textContent = "▶ Run";
-            inputBar.style.display = 'none';
-            isWaitingForInput = false;
-            inputCallback = null;
-            isRunning = false;
-        }
-    }
-
-    // --- Init ---
-    setupOfflineCache();
-    (async () => {
-        await resolveStorage();
-        updatePersistenceBadge();
-        await Promise.all([loadSettings(), initProjects()]);
-        initPyodide();
-    })();
-    runBtn.addEventListener('click', runCode);
-
+/* Giữ trái tim để ôm mẹ */
+(function(){
+  const b=$('#hug'); let t=null,p=0,n=0;
+  function start(){
+    if(t||p>=100) return;
+    t=setInterval(()=>{
+      p+=100/30; n++; b.style.setProperty('--p',p); if(n%5===0) chime(n/5);
+      if(p>=100){ clearInterval(t); t=null; done(); }
+    },100);
+  }
+  function stop(){ if(p>=100) return; clearInterval(t); t=null; p=0; n=0; b.style.setProperty('--p',0); }
+  function done(){
+    const r=b.getBoundingClientRect(); toast('Mẹ Mi đã nhận được cái ôm của con 🤗💗');
+    for(let k=0;k<6;k++) setTimeout(()=>burst(innerWidth*Math.random(),r.top+Math.random()*60,16,['💗','🤗','🌷','✨']),k*250);
+    setTimeout(()=>{p=0;n=0;b.style.setProperty('--p',0)},2500);
+  }
+  b.addEventListener('pointerdown',start);
+  ['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,stop));
+  b.addEventListener('keydown',e=>{ if((e.key===' '||e.key==='Enter')&&!e.repeat){e.preventDefault();start()} });
+  b.addEventListener('keyup',e=>{ if(e.key===' '||e.key==='Enter') stop(); });
+})();
 </script>
-
 </body>
 </html>
